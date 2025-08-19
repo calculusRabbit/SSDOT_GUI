@@ -28,43 +28,42 @@ classdef Logger < handle
             
             % Check if log file for this application already exists - if it does close any open handles and delete it 
             % so you can start fresh
-% Check if log file exists; if yes, close any open handle to it and delete
-            if exist(self.filename,'file') == 2
-                fids = [];
-                try
-                    ofs = openedFiles;  %
-                    if istable(ofs) && any(strcmpi(ofs.Properties.VariableNames,'FID'))
-                        fids = ofs.FID;
-                    elseif isstruct(ofs) && isfield(ofs,'fid')
-                        fids = [ofs.fid];
-                    end
-                catch
-                    % 
-                    try
-                        fids = fopen('all');
-                    catch
-                        fids = [];
-                    end
+            %% VU NGUYEN: No longer work with new version matlab
+            % if exist(self.filename, 'file') == 2
+            %     fds = fopen('all');
+            %     for ii = 1:length(fds)
+            %         if strcmp(fopen(fds(ii)), self.filename)
+            %             fclose(fds(ii));
+            %             delete(self.filename)
+            %         end
+            %     end
+            % end
+            
+            %% using openedFiles instead of fopen
+            if exist(self.filename, 'file') == 2
+                
+                if exist('openedFiles','builtin') || exist('openedFiles','file')
+                    fids = openedFiles;     % new matalb version
+                else
+                    fids = fopen('all');    % Fallback old matlab
                 end
             
-                % 
+                
                 for ii = 1:numel(fids)
-                    try
-                        thisName = fopen(fids(ii));
-                        if ischar(thisName) && strcmp(thisName, self.filename)
-                            fclose(fids(ii));
-                        end
-                    catch
+                    [fnameOpened,~,~] = fopen(fids(ii));
+                    if ischar(fnameOpened) && strcmp(fnameOpened, self.filename)
+                        fclose(fids(ii));
                     end
                 end
             
-                % delete old log
+                
                 try
                     delete(self.filename);
                 catch
+                    
                 end
             end
-                        
+
             try
                 self.fhandle = fopen(self.filename, 'wt');
             catch ME
