@@ -1,0 +1,25 @@
+{
+	"Processing":{
+		"ProcessingElement":"2025-08-29_003",
+		"ApplicationName":"Homer3",
+		"Version":"v1.87.0",
+		"Dependencies":{
+			"Utils":"v1.8.3",
+			"DataTree":"v1.22.0",
+			"FuncRegistry":"v1.5.1"
+		},
+		"DateTime":"September 6, 2025,   14:26:25",
+		"tIncMan":[],
+		"mlActMan":[],
+		"FunctionCalls":[
+			"mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, [0.0e+00 1.0e+07], 2.0, [0.0 45.0]);",
+			"dod = hmrR_Intensity2OD(data);",
+			"dod = hmrR_MotionCorrectSplineSG(dod, mlActAuto, 0.99, 10, 1);",
+			"dod = hmrR_BandpassFilt(dod, 0.000, 0.500);",
+			"[tIncAuto, tIncAutoCh] = hmrR_MotionArtifactByChannel(dod, probe, mlActMan, mlActAuto, tIncMan, 0.5, 1.0, 20.0, 5.00);",
+			"[stim, tRange] = hmrR_StimRejection(dod, stim, tIncAuto, tIncMan, [-2.0 10.0]);",
+			"dc = hmrR_OD2Conc(dod, probe, [1.0 1.0]);",
+			"[dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, [-2.0 10.0], 1, 1, [1.0 1.0], 15.0, 1, 3, 0);"
+		]
+	}
+}
