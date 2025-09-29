@@ -1,5 +1,7 @@
 function plotOD(uiAx, runObj, userSel)
-
+    runObj.Load();
+    source = userSel.source;
+    detector = userSel.detector;
     % get optical density by using homer3 GetVar
     dod = runObj.procStream.output.GetVar('dod'); % GetVar using homer3 function
     % channel info (Tx,Rx,wavelength)
@@ -24,17 +26,16 @@ function plotOD(uiAx, runObj, userSel)
 
     % loop over user selected wavelength
     for i = 1:numel(userSel.selectSignal)
-        % eg: map 850nm -> index
-        waveLengthIdx = app.nmLabelToIndex(userSel.selectSignal{i});
-        
+        % eg: map 850nm -> index        
         % find the column index that match
         % source, detector, wavelength
         col = find(source == sourceArrayOD & ...
             detector == detectorArrayOD &  ...
-            waveLengthIdx == waveLengthArrayOD, 1, 'first');
+            userSel.selectSignal(i) == waveLengthArrayOD, 1, 'first');
 
         % plot OD curve
-        name = sprintf('Run %d — %s — Tx%d–Rx%d', runObj.iRun, dataTypeLabel, source, detector);
+        dataTypeLabel = ml(col).dataTypeLabel;
+        name = sprintf('Run %d — Tx%d–Rx%d — %s - %s', runObj.iRun, source, detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
         plot(uiAx, x, y(:,col), 'LineWidth', 1.3, 'DisplayName', name);
     end
 end

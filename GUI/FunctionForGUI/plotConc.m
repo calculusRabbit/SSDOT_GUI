@@ -5,7 +5,7 @@ function plotConc(uiAx, runObj, userSel)
 
     % find HbO index
     for i = 1:numel(ml)
-        if userSel.source == ml(i).sourceIndex && userSel.detector == ml(i).detectorIndex
+        if (userSel.source == ml(i).sourceIndex && userSel.detector == ml(i).detectorIndex)
             hbo_idx = i; 
             break;
         end
@@ -15,14 +15,10 @@ function plotConc(uiAx, runObj, userSel)
     y = dc.GetDataTimeSeries();
 
     for i = 1:numel(userSel.selectSignal)
-        sel = lower(userSel.selectSignal{i});
-        if strcmp(sel,'hbo'), k = 0;
-        elseif strcmp(sel,'hbr'), k = 1;
-        elseif strcmp(sel,'hbt'), k = 2;
-        end
+        k = userSel.selectSignal(i);
 
         dataTypeLabel = dc.measurementList(hbo_idx + k).dataTypeLabel;
-        name = sprintf('Run %d — %s — Tx%d–Rx%d', runObj.iRun, dataTypeLabel, source, detector);
+        name = sprintf('Run %d — %s — Tx%d–Rx%d', runObj.iRun, dataTypeLabel, userSel.source, userSel.detector);
         plot(uiAx, x, y(:, hbo_idx + k), 'LineWidth', 1.3, 'DisplayName', name);
     end
 end
