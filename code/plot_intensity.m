@@ -1,12 +1,14 @@
-function plot_intensity(cfg,faces, brain_vertices, int_at_pos, rotation)
-
+function plot_intensity(ax, cfg,faces, brain_vertices, int_at_pos, rotation)
+% Clear and hold
+cla(ax);hold(ax, 'on');
 axes_order = [2,1,3];
 
 h = trisurf(faces, brain_vertices(:,axes_order(1)), brain_vertices(:,axes_order(2)), brain_vertices(:,axes_order(3)), ...
-      int_at_pos,'facecolor','interp','edgealpha',0, 'visible','on'); 
+      int_at_pos,'facecolor','interp','edgealpha',0, 'visible','on', 'parent',ax); 
 set(h,'diffusestrength',.9,'specularstrength',.12,'ambientstrength',.2);
 caxis(cfg.caxis_value)
 
+axes(ax); 
 if strcmp(rotation, 'L')
     view(90,0)
     camtarget([128.0, 132.0, 130.0])
