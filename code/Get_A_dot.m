@@ -1,4 +1,4 @@
-function Sensitivity_Matrix = Get_A_dot(acquired_path,rhoSD_ssThresh,mlActAuto,spatially_regu)
+function Sensitivity_Matrix = Get_A_dot(acquired_path,rhoSD_ssThresh,mlActAuto,spatially_regu,atlasViewer)
 
 Sensitivity_Matrix.Adot = [];
 Sensitivity_Matrix.Adot_scalp = [];
@@ -16,18 +16,18 @@ Adot_scalp  = load(A_scalp_file);
 Adot = Adot.Adot;
 Adot_scalp = Adot_scalp.Adot_scalp;
 
-At_file = 'atlasViewer.mat';
-atlasViewer = load([acquired_path,At_file]);
-warning off
 
 probe = atlasViewer.probe;
 SD = convertProbe2SD(probe);
 
 ml = SD.MeasList;
-if size(ml,1) ~= size( mlActAuto{1,1},1)
-    mlActAuto{1,1}([51 102],:) = [];
-end
-activeChLst = find(ml(:,4)==1 & mlActAuto{1,1}==1);
+% if size(ml,1) ~= size( mlActAuto{1,1},1)
+%     mlActAuto{1,1}([51 102],:) = [];
+% end
+% activeChLst = find(ml(:,4)==1 & mlActAuto{1,1}==1);
+% i am blocking the above but later we need to extract mlActAuto from Homer
+% stream !!!!!!!!!!!!
+activeChLst = find(ml(:,4)==1);
 
 lst = find(ml(:,4)==1 & SD.MeasListAct==1);
 rhoSD = zeros(length(lst),1);

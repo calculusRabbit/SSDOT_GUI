@@ -1,4 +1,4 @@
-function plot_intensity(ax, cfg,faces, brain_vertices, int_at_pos, rotation)
+function plot_intensity(ax, caxis_value, faces, brain_vertices, int_at_pos, rotation)
 % Clear and hold
 cla(ax);hold(ax, 'on');
 axes_order = [2,1,3];
@@ -7,7 +7,9 @@ h = trisurf(faces, brain_vertices(:,axes_order(1)), brain_vertices(:,axes_order(
       int_at_pos,'facecolor','interp','edgealpha',0, 'visible','on', 'parent',ax,'facealpha',1); 
 set(h,'diffusestrength',.9,'specularstrength',.12,'ambientstrength',.2);
 axes(ax);
-caxis(cfg.caxis_value)
+if ~isempty(caxis_value)
+ caxis(caxis_value)
+end
 
 axes(ax); 
 if strcmp(rotation, 'L')
@@ -37,13 +39,7 @@ lighting phong;
 myColorMap = jet(256);
 myColorMap(127:129,:) = 0.8;
 colormap(myColorMap);
-% colorbar
+colorbar
 axis image
 axis off
 hold on
-
-if strcmp(cfg.loc_line,'on')
-    perturbation_center = cfg.center;
-    plot3([perturbation_center(1),perturbation_center(1)],[220,220],[40,220],'y-.','linewidth',1.5)
-    plot3([60 200],[220 220],[perturbation_center(3),perturbation_center(3)],'y-.','linewidth',1.5)
-end
