@@ -4,8 +4,9 @@ cla(ax);hold(ax, 'on');
 axes_order = [2,1,3];
 
 h = trisurf(faces, brain_vertices(:,axes_order(1)), brain_vertices(:,axes_order(2)), brain_vertices(:,axes_order(3)), ...
-      int_at_pos,'facecolor','interp','edgealpha',0, 'visible','on', 'parent',ax); 
+      int_at_pos,'facecolor','interp','edgealpha',0, 'visible','on', 'parent',ax,'facealpha',1); 
 set(h,'diffusestrength',.9,'specularstrength',.12,'ambientstrength',.2);
+axes(ax);
 caxis(cfg.caxis_value)
 
 axes(ax); 
