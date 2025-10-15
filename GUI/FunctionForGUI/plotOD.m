@@ -1,5 +1,4 @@
 function plotOD(uiAx, runObj, userSel)
-    runObj.Load();
     source = userSel.source;
     detector = userSel.detector;
     % get optical density by using homer3 GetVar
@@ -37,5 +36,36 @@ function plotOD(uiAx, runObj, userSel)
         dataTypeLabel = ml(col).dataTypeLabel;
         name = sprintf('Run %d — Tx%d–Rx%d — %s - %s', runObj.iRun, source, detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
         plot(uiAx, x, y(:,col), 'LineWidth', 1.3, 'DisplayName', name);
+    end
+
+
+    % Overlay stim vertical lines
+    stimList = runObj.GetStim();
+
+    colorOrder = get(uiAx, 'ColorOrder');
+
+    for i = 1:numel(stimList)
+        data = stimList(i).GetData();
+        if isempty(data)
+            continue
+        end
+
+        % first column is the onset timeline
+        onsetTime = data(:,1);
+        color = colorOrder(i, :);
+
+        for j = 1:numel(onsetTime)
+            if j == 1
+            xline(uiAx, onsetTime(j), '--', ...
+                'LineWidth', 1.3, ...
+                'Color', color, ...
+                'DisplayName', stimList(i).name);
+            else
+            xline(uiAx, onsetTime(j), '--', ...
+                'LineWidth', 1.3, ...
+                'Color', color, ...
+                'HandleVisibility', 'off');
+            end
+        end
     end
 end
