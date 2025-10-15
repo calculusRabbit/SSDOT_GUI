@@ -10,8 +10,7 @@ function plot_head_surface(ax1, ax2, AtlasState)
     brain_vertices = AtlasState.headsurf.mesh.vertices;
     faces = AtlasState.headsurf.mesh.faces;
     int_at_pos = zeros(size(brain_vertices, 1), 1); % Initialize intensity values
-    cfg.caxis_value = [-1 1];cfg.loc_line = 'off';
-    plot_intensity(ax1, cfg,faces, brain_vertices, int_at_pos, 'L')
-    plot_intensity(ax2, cfg,faces, brain_vertices, int_at_pos, 'R')
+    plot_intensity(ax1, [-1 1],faces, brain_vertices, int_at_pos, 'L')
+    plot_intensity(ax2, [-1 1],faces, brain_vertices, int_at_pos, 'R')
 end
 
