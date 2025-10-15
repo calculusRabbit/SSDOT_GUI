@@ -1,26 +1,30 @@
-function plotConc(uiAx, runObj, userSel)
-    dc = runObj.procStream.output.GetVar('dc');
-    ml = dc.measurementList;
+function plotRaw(uiAx, runObj, userSel)
+    acq = runObj.acquired;
 
-    % find HbO index
-    for i = 1:numel(ml)
-        if (userSel.source == ml(i).sourceIndex && userSel.detector == ml(i).detectorIndex)
-            hbo_idx = i; 
-            break;
-        end
-    end
+    % Get time vector and data matrix
+    y = acq.GetDataTimeSeries();
+    t = acq.GetTime();
 
-    x = dc.GetTime();
-    y = dc.GetDataTimeSeries();
+
+    % Measurement list (numeric matrix)
+    ml = acq.GetMeasList();   % columns: [src det type wlIdx dataTypeIdx ...]
+
+    % Extract user selection
+    src = userSel.source;
+    det = userSel.detector;
+
 
     for i = 1:numel(userSel.selectSignal)
-        k = userSel.selectSignal(i);
+        wlIdx = userSel.selectSignal(i);
 
-        dataTypeLabel = dc.measurementList(hbo_idx + k).dataTypeLabel;
-        name = sprintf('Run %d — %s — Tx%d–Rx%d', runObj.iRun, dataTypeLabel, userSel.source, userSel.detector);
-        plot(uiAx, x, y(:, hbo_idx + k), 'LineWidth', 1.3, 'DisplayName', name);
+        % Find matching measurement column
+        col = find(ml(:,1) == src & ml(:,2) == det & ml(:,4) == wlIdx, 1, 'first');
+
+        % Plot the raw
+        label = sprintf('Run %d - Tx%d-Rx%d - Raw - %s', ...
+            runObj.iRun, src, det, userSel.waveLengthLabel{wlIdx});
+        plot(uiAx, t, y(:,col), 'LineWidth', 1.3, 'DisplayName', label);
     end
-
 
     % Overlay stim vertical lines
     stimList = runObj.GetStim();

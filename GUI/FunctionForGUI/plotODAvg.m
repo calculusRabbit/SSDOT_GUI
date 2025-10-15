@@ -1,5 +1,4 @@
 function plotODAvg(uiAx, obj, userSel)
-    obj.Load();
     dodAvg = obj.procStream.output.GetVar('dodAvg');
     if isempty(dodAvg)
         warning('plotODAvg: dodAvg not found in output.');
@@ -7,6 +6,9 @@ function plotODAvg(uiAx, obj, userSel)
         uialert(fig, 'plotODAvg: dodAvg not found in output.', 'Warning');
         return;
     end
+
+    x = dod.GetTime(); % time vector
+    y = dod.GetDataTimeSeries(); % OD data matrix
 
     ml = dodAvg.measurementList;
     for i = 1:numel(userSel.selectSignal)
@@ -32,7 +34,7 @@ function plotODAvg(uiAx, obj, userSel)
             end
 
             dataTypeLabel = ml(col).dataTypeLabel;
-            name = sprintf('Run %d — Tx%d–Rx%d — %s - %s', idx, userSel.source, userSel.detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
+            name = sprintf('%s %d — Tx%d-Rx%d — %s - %s',obj.type, idx, userSel.source, userSel.detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
             plot(uiAx, x, y(:,col), 'LineWidth', 1.3, 'DisplayName', name);
         end
     end
