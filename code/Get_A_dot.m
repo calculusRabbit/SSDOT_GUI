@@ -1,4 +1,4 @@
-function Sensitivity_Matrix = Get_A_dot(acquired_path,rhoSD_ssThresh,mlActAuto,spatially_regu,atlasViewer)
+function Sensitivity_Matrix = Get_A_dot(acquired_path,rhoSD_ssThresh,mlActAuto,spatially_regu,atlasViewer,wavelength,mask_threshold)
 
 Sensitivity_Matrix.Adot = [];
 Sensitivity_Matrix.Adot_scalp = [];
@@ -54,7 +54,7 @@ Adot = Adot(channels,:,:);
 Adot_scalp = Adot_scalp(channels,:,:);
 
 
-E = GetExtinctions([760 850]);
+E = GetExtinctions(wavelength);
 E = E/10; %convert from /cm to /mm  E raws: wavelength, columns 1:HbO, 2:HbR
 
 Sensitivity_Matrix.E = E;
@@ -105,3 +105,9 @@ end
 
 Sensitivity_Matrix.Adot = Adot;
 Sensitivity_Matrix.Adot_scalp = Adot_scalp;
+
+M = Make_mask(mask_threshold, Sensitivity_Matrix.Adot_orig, Sensitivity_Matrix.Adot_scalp_orig);
+Sensitivity_Matrix.M = M;
+% here we use the spatially regularized A matrix 
+A = Make_A_matrix(Sensitivity_Matrix.Adot, Sensitivity_Matrix.Adot_scalp, Sensitivity_Matrix.E,  M);
+Sensitivity_Matrix.A = A;
