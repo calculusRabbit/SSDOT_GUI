@@ -1,6 +1,5 @@
-function G = Make_G_matrix(At_file, M, threshold_brain, threshold_scalp, sigma_brain, sigma_scalp, Adot_orig, Adot_scalp_orig)
+function G = Make_G_matrix(atlasViewer, M, threshold_brain, threshold_scalp, sigma_brain, sigma_scalp, Adot_orig, Adot_scalp_orig)
 
-atlasViewer = load(At_file);
 
 brain_vertices = atlasViewer.fwmodel.mesh.vertices; %20004*3
 scalp_vertices = atlasViewer.fwmodel.mesh_scalp.vertices; %9563*3

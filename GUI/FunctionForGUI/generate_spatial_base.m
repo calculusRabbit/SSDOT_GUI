@@ -1,46 +1,22 @@
 function generate_spatial_base(app)
-
-%% Prompt the user for a mask threshold value
-prompt = {'Enter threshold of sensitivity'};
-dlgtitle = 'Input Threshold';
-dims = [1 35];
-definput = {'-2'};  % Default value
-
-answer = inputdlg(prompt, dlgtitle, dims, definput);
-
-% If user presses Cancel, exit
-if isempty(answer)
-    return;
-end
-
-% Convert input from string to numeric
-mask_threshold = str2double(answer{1});
-
-% Validate the input
-if isnan(mask_threshold)
-    uialert(app.UIFigure, 'Invalid input. Please enter a numeric value.', 'Error');
-    return;
-end
-%% make a mask
+%% Calculate G
 atlasViewer = get_global_variable(app, 'AtlasState');
-M = Make_mask(mask_threshold, Sensitivity_Matrix.Adot_orig, Sensitivity_Matrix.Adot_scalp_orig);
+Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
 
+% Vu we need to get threshold_brain and _scalp from user input
+cfg.threshold_brain = 5;
+cfg.threshold_scalp = 20;
+cfg.sigma_brain = 5;
+cfg.sigma_scalp = 20;
+% Vu we should save all the user input data in cfg
+hFig =  app.UIFigure;
+setappdata(hFig, 'cfg', cfg);
 
+G = Make_G_matrix(atlasViewer, Sensitivity_Matrix.M, ...
+    cfg.threshold_brain, cfg.threshold_scalp, cfg.sigma_brain, cfg.sigma_scalp, ...
+    Sensitivity_Matrix.Adot_orig, Sensitivity_Matrix.Adot_scalp_orig);
 
+hFig =  app.UIFigure;
+setappdata(hFig, 'G', G);
 
-
-brain_vertices = atlasViewer.fwmodel.mesh.vertices; %20004*3
-scalp_vertices = atlasViewer.fwmodel.mesh_scalp.vertices; %9563*3
-
-mask_brain = M.mask_brain;
-mask_scalp = M.mask_scalp;
-
-brain_vertices_masked = brain_vertices(mask_brain,:);
-scalp_vertices_masked = scalp_vertices(mask_scalp,:);
-
-[brain_vertices_new] = down_sample_vertices(brain_vertices_masked, threshold_brain);
-[scalp_vertices_new] = down_sample_vertices(scalp_vertices_masked, threshold_scalp);
-
-
-G_brain = make_kernel_matrix_gpu(brain_vertices_new, brain_vertices_masked,sigma_brain);
-G_scalp = make_kernel_matrix_gpu(scalp_vertices_new, scalp_vertices_masked,sigma_scalp);
+disp('calculate G finished');
