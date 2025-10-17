@@ -16,3 +16,4 @@ hFig =  app.UIFigure;
 setappdata(hFig, 'AtlasState', AtlasState);
 
 disp('AtlasState loaded and stored in GUI.');
+end
