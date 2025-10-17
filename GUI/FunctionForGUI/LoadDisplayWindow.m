@@ -1,32 +1,38 @@
 classdef LoadDisplayWindow < handle
     properties (Access = private)
         fig
-        rowth = 1
+        row = 1
+        rowHeight = 30
     end
 
     methods
         function obj = LoadDisplayWindow()
-            obj.fig = uifigure("Name","Load/Display");
+            % create popup figure
+            obj.fig = uifigure('Name', 'Load/Display');
         end
 
-        function addStep(obj, description, loadFunc, displayFunc)
-            maxHeight = obj.fig.InnerPosition(4);
-            y = maxHeight - 30*obj.rowth; 
+        function addStep(obj, description, actions)
+            % description: text label for this row
+            % actions: struct of name -> function_handle
 
-            % description
-            uilabel(obj.fig, "Text", description, "Position", [10, y, 80, 22]);
+            y = obj.fig.InnerPosition(4) - obj.row * obj.rowHeight;
 
-            % Load button
-            uibutton(obj.fig, "Text", "Load", ...
-                "Position", [100, y, 60, 22], ...
-                "ButtonPushedFcn", @(~,~) loadFunc());
+            % Label on the left
+            uilabel(obj.fig, 'Text', description, 'Position', [10, y, 120, 24]);
 
-            % Display button
-            uibutton(obj.fig, "Text", "Display", ...
-                "Position", [170, y, 70, 22], ...
-                "ButtonPushedFcn", @(~,~) displayFunc());
+            % Create one button for each field in the struct
+            x = 100;
+            names = fieldnames(actions);
+            for i = 1:numel(names)
+                cb = actions.(names{i});
+                uibutton(obj.fig, ...
+                    'Text', names{i}, ...
+                    'Position', [x, y, 100, 25], ...
+                    'ButtonPushedFcn', @(~,~) cb());
+                x = x + 100; % spacing between buttons
+            end
 
-            obj.rowth = obj.rowth + 1;
+            obj.row = obj.row + 1;
         end
     end
 end
