@@ -1,4 +1,4 @@
-function tbasis = construct_basis_function(idxBasis,paramsBasis,trange,ntHRF, tHRF,dt)
+function [tbasis,nB, nCond] = construct_basis_function(idxBasis,paramsBasis,trange,ntHRF, tHRF,dt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Construct the basis functions

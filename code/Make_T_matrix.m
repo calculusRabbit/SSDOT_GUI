@@ -1,9 +1,9 @@
-function T = Make_T_matrix(Proc_data)
+function T = Make_T_matrix(dA,tbasis)
 
-T_HbO_brain = squeeze(Proc_data.dA(:,:,1));
-T_HbR_brain = squeeze(Proc_data.dA(:,:,2)); 
-t_HbO_brain = squeeze(Proc_data.tbasis(:,:,1));
-t_HbR_brain = squeeze(Proc_data.tbasis(:,:,2)); 
+T_HbO_brain = squeeze(dA(:,:,1));
+T_HbR_brain = squeeze(dA(:,:,2)); 
+t_HbO_brain = squeeze(tbasis(:,:,1));
+t_HbR_brain = squeeze(tbasis(:,:,2)); 
 
 
 T.T_HbO_brain = T_HbO_brain;
