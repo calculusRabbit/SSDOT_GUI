@@ -1,10 +1,9 @@
-function Conc = approximate_Conc(calculated_mat, cfg)
+function Conc = approximate_Conc(G, T, beta, n_batch, with_scalp,device)
 
 canUseGPU=true;
 
-if strcmp(cfg.device,'gpu')
+if strcmp(device,'gpu')
     try
-%         fprintf('Finding GPU...\n')
         if gpuDeviceCount > 1
             for ii = 1:gpuDeviceCount
                 g = gpuDevice(ii);
@@ -21,13 +20,12 @@ if strcmp(cfg.device,'gpu')
         canUseGPU=false;
         fprintf('no GPU. Using cpu now\n')
     end
-    n_batch = cfg.n_batch_brain;
     H_finished = false;
     i = 1;
     while i <= 100
         fprintf('app Conc batch %d\n', n_batch)
         try
-            Conc = calculate_Conc(calculated_mat.Proc_data, calculated_mat.G, calculated_mat.T, calculated_mat.b, n_batch, cfg);
+            Conc = calculate_Conc(G, T, beta, n_batch, with_scalp);
             H_finished = true;
             break
         catch
@@ -42,7 +40,8 @@ if strcmp(cfg.device,'gpu')
         return
     end
     
-elseif strcmp(cfg.device, 'cpu') || ~canUseGPU
+elseif strcmp(device, 'cpu') || ~canUseGPU
+
     cond_num = length(calculated_mat.Proc_data.stim);
     for i_cond = 1:cond_num
         if cfg.with_scalp == 1  
@@ -123,18 +122,21 @@ elseif strcmp(cfg.device, 'cpu') || ~canUseGPU
 end
 end
 
-function Conc = calculate_Conc(Proc_data,G, T, beta, n_batch,cfg)
-cond_num = length(Proc_data.stim);
-
+function Conc = calculate_Conc(G, T, beta, n_batch, with_scalp)
+% cond_num = length(Proc_data.stim);
+cond_num = size(T.T_HbO_brain,2);
 % [time_points, [Cond1[tB1...tBx], Cond2[tB1...tBx]...], Concentration]
 for i_cond = 1:cond_num
-    if cfg.with_scalp == 1 || (isfield(cfg,'whole_time') && cfg.whole_time == 1)
-        T_HbO_brain = T.T_HbO_brain;
-        T_HbR_brain = T.T_HbR_brain;
-    else
-        T_HbO_brain = T.t_HbO_brain;
-        T_HbR_brain = T.t_HbR_brain;
-    end
+    T_HbO_brain = T.t_HbO_brain;
+    T_HbR_brain = T.t_HbR_brain;
+    % if cfg.with_scalp == 1 || (isfield(cfg,'whole_time') &&
+    % cfg.whole_time == 1) % i don't remember when i use wholetime
+    %     T_HbO_brain = T.T_HbO_brain;
+    %     T_HbR_brain = T.T_HbR_brain;
+    % else
+    %     T_HbO_brain = T.t_HbO_brain;
+    %     T_HbR_brain = T.t_HbR_brain;
+    % end
     n_g = size(G.G_brain,1);
     tbasis_num = size(T.t_HbO_brain,2);
     n_t = tbasis_num*cond_num;
@@ -187,7 +189,7 @@ for i_cond = 1:cond_num
     Conc.intensity_HbR{i_cond} = Conc_HbR;
     %% scalp
     
-    if cfg.with_scalp == 1
+    if with_scalp == 1
         T_HbO_scalp = T.T_HbO_scalp;
         T_HbR_scalp = T.T_HbR_scalp;
         

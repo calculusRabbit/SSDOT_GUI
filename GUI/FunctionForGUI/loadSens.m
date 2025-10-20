@@ -38,10 +38,15 @@ end
 
 
 wavelength = [760 850]; % Vu please also get users to input this or we get this information from snirf
-
-Sensitivity_Matrix = Get_A_dot(folderPath,7,mlActAuto,1,atlasViewer, wavelength, mask_threshold);
+spatially_regu = 0; % Vu: get user input, either 0-no or 1-yes
+Sensitivity_Matrix = Get_A_dot(folderPath,7,mlActAuto,spatially_regu,atlasViewer, wavelength, mask_threshold);
 
 hFig =  app.UIFigure;
 setappdata(hFig, 'Sensitivity_Matrix', Sensitivity_Matrix);
+
+M = Make_mask(mask_threshold, Sensitivity_Matrix.Adot_orig, Sensitivity_Matrix.Adot_scalp_orig);
+save_global_data(app,'M',M);
+A = Make_A_matrix(Sensitivity_Matrix.Adot, Sensitivity_Matrix.Adot_scalp, Sensitivity_Matrix.E,  M);
+save_global_data(app,'A',A);
 
 disp('calculate A finished');
