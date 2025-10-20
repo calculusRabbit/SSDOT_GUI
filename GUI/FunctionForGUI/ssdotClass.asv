@@ -1,0 +1,91 @@
+classdef ssdotClass < handle
+    %SSDOTCLAS Summary of this class goes here
+    %   Detailed explanation goes here
+
+    properties
+        A = struct( ...
+            'Amatrix_brain', struct( ...
+                'w1_HbO', [], ...
+                'w1_HbR', [], ...
+                'w2_HbO', [], ...
+                'w2_HbR', [] ), ...
+            'Amatrix_scalp', struct( ...
+                'w1_HbO', [], ...
+                'w1_HbR', [], ...
+                'w2_HbO', [], ...
+                'w2_HbR', [] ))
+
+        T = struct('T_HbO_brain',[],'T_HbR_brain',[], ...
+            't_HbO_brain',[],'t_HbR_brain',[], ...
+            'T_HbO_scalp',[],'T_HbR_scalp',[], ...
+            't_HbO_scalp',[],'t_HbR_scalp',[])
+
+        G = struct('G_brain',[],'G_scalp',[])
+
+        RunList = {} %initialize as cell
+    end
+
+    methods
+        function obj = ssdotClass()
+            %constructor
+        end
+
+        %% set value function
+        % setVar('Run', runObj -> add a RunClass to list
+        % setVar('G', Gstruct -> expects fields G_brain, G_scalp
+        % setVar('A', Astruct -> Amatrix_* with w1/w2 x HbO/HbR
+        % setVar('T', Tstruct -> brain/scalp x HbO/HbR, T and t
+        function obj = setVar(obj, propName, value)
+        
+            switch propName
+                case 'Run'
+                    if isa(value, 'RunClass')
+                        obj.RunList{value.iRun} = value; 
+                        fprintf('Run assigned at index %d\n', numel(obj.RunList));
+                    else
+                        error('Expected a RunClass object for property "Run".');
+                    end
+
+                case 'A'
+                    req = {'Amatrix_brain','Amatrix_scalp'};
+                    assert(all(isfield(value, req)), 'A must have Amatrix_brain and Amatrix_scalp');
+                    obj.A = value;
+
+                case 'T'
+                    assert(isstruct(value) && isfield(value,'G_brain') && isfield(value,'G_scalp'), 'G must have fields G_brain and G_scalp');
+                    obj.G = value;
+
+                case 'G'
+        
+                otherwise
+                    error('Unknown propName for setVar: %s', propName);
+            end
+        end
+
+
+        %% get value function
+        function val = getVar(obj, runIdx, propName)
+            if ~isprop(obj, propName)
+                error('Invalid property name: %s', propName);
+            end
+
+        
+            if nargin < 3
+                runIdx = 1; % default to first run
+            end
+        
+            switch propName
+                case 'OD'
+                case 'T'
+                    val = obj.T;
+                case 'A'
+                    val = obj.A;
+                    
+                otherwise
+                    val = obj.(propName);
+            end
+        end
+
+
+    end
+end
