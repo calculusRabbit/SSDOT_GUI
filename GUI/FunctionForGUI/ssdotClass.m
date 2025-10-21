@@ -50,16 +50,14 @@ classdef ssdotClass < handle
                     req = {'Amatrix_brain','Amatrix_scalp'};
                     assert(all(isfield(value, req)), 'A must have Amatrix_brain and Amatrix_scalp');
                     obj.A = value;
-                case 'T'
-                    req = {'T_HbO_brain', 'T_HbR_brain'}
-                    assert(all(isfield(value, req)), 'A must have T_Hbo_brain and T_Hbr_brain field');
-                    obj.T = value;
 
                 case 'T'
                     assert(isstruct(value) && isfield(value,'G_brain') && isfield(value,'G_scalp'), 'G must have fields G_brain and G_scalp');
                     obj.G = value;
 
                 case 'G'
+                    assert(isstruct(value) && isfield(value, 'G_brain') && isfield(value, 'G_scalp'), 'G must have fields G_brain and G_scalp');
+                    obj.G = value;
         
                 otherwise
                     error('Unknown propName for setVar: %s', propName);

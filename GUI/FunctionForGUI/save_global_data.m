@@ -1,13 +1,13 @@
-function error = save_global_data(var)
-% this function is to ts
+function save_global_data(app, var_name, var_value)
+% this func is to
 % var should be a double value or a string
 
-checking: is it a string, or numbers
+% checking: is it a string, or numbers
 
 
 
 hFig =  app.UIFigure;
-setappdata(hFig, var.name, var);
+setappdata(hFig, var_name, var_value);
 
 %check
 
