@@ -1,95 +1,117 @@
 classdef ssdotClass < handle
-    %SSDOTCLAS Summary of this class goes here
-    %   Detailed explanation goes here
 
-    properties
+    properties (Access = public)
+        AtlasState
+        Sensitivity_Matrix
+        M
         A = struct( ...
             'Amatrix_brain', struct( ...
-                'w1_HbO', [], ...
-                'w1_HbR', [], ...
-                'w2_HbO', [], ...
-                'w2_HbR', [] ), ...
+            'w1_HbO',[], ...
+            'w1_HbR',[], ...
+            'w2_HbO',[], ...
+            'w2_HbR',[]), ...
             'Amatrix_scalp', struct( ...
-                'w1_HbO', [], ...
-                'w1_HbR', [], ...
-                'w2_HbO', [], ...
-                'w2_HbR', [] ))
+            'w1_HbO',[], ...
+            'w1_HbR',[], ...
+            'w2_HbO',[], ...
+            'w2_HbR',[]))
 
-        T = struct('T_HbO_brain',[],'T_HbR_brain',[], ...
-            't_HbO_brain',[],'t_HbR_brain',[], ...
-            'T_HbO_scalp',[],'T_HbR_scalp',[], ...
-            't_HbO_scalp',[],'t_HbR_scalp',[])
+        T = struct( ...
+            'T_HbO_brain',[],'T_HbR_brain',[], 't_HbO_brain',[],'t_HbR_brain',[], ...
+            'T_HbO_scalp',[],'T_HbR_scalp',[], 't_HbO_scalp',[],'t_HbR_scalp',[])
 
         G = struct('G_brain',[],'G_scalp',[])
 
-        RunList = {} %initialize as cell
+        % Parameters/users' inputs
+        cfg = struct()
+
+        % Derived vectors/matrices for modeling
+        Y = [] % stacked OD vector
+        OD_SS = [] % matrix
+        OD_drift = [] % matrix
+        H = struct('H_brain', [], 'H_scalp', [])
+        b
+
+        % container for all runs
+        RunList RunClass = RunClass.empty
+
+        % selected run
+        selectedRun RunClass = RunClass.empty
+
+        % Optional metadata
+        meta struct = struct('created', datetime, 'notes', "")
     end
 
-    methods
+    methods (Access = public)
         function obj = ssdotClass()
-            %constructor
         end
 
-        %% set value function
-        % setVar('Run', runObj -> add a RunClass to list
-        % setVar('G', Gstruct -> expects fields G_brain, G_scalp
-        % setVar('A', Astruct -> Amatrix_* with w1/w2 x HbO/HbR
-        % setVar('T', Tstruct -> brain/scalp x HbO/HbR, T and t
-        function obj = setVar(obj, propName, value)
-        
-            switch propName
-                case 'Run'
+        % set value function
+        function setVar(obj, name, value)
+            switch string(name)
+                case "Run"
                     if isa(value, 'RunClass')
-                        obj.RunList{value.iRun} = value; 
-                        fprintf('Run assigned at index %d\n', numel(obj.RunList));
+                        idx = value.iRun;
+                        obj.RunList(idx) = value;
+                        fprintf('Run asigned\n');
                     else
                         error('Expected a RunClass object for property "Run".');
                     end
+                    
+                case "AtlasState"
+                    obj.AtlasState = value;
+                    
+                case "Sensitivity_Matrix"
+                    obj.Sensitivity_Matrix = value;
 
-                case 'A'
-                    req = {'Amatrix_brain','Amatrix_scalp'};
-                    assert(all(isfield(value, req)), 'A must have Amatrix_brain and Amatrix_scalp');
+                case "M"
+                    obj.M = value;
+
+                case "A"
                     obj.A = value;
 
-                case 'T'
-                    assert(isstruct(value) && isfield(value,'G_brain') && isfield(value,'G_scalp'), 'G must have fields G_brain and G_scalp');
+                case "T"           
+                    obj.T = value;
+
+                case "G"
                     obj.G = value;
 
-                case 'G'
-                    assert(isstruct(value) && isfield(value, 'G_brain') && isfield(value, 'G_scalp'), 'G must have fields G_brain and G_scalp');
-                    obj.G = value;
-        
-                otherwise
-                    error('Unknown propName for setVar: %s', propName);
+                case "cfg"
+                    obj.cfg = value;
+
+                case "Y"
+                    obj.Y = value;
+
+                case "OD_SS"
+                    obj.OD_SS = value;
+
+                case "OD_drift"
+                    obj.OD_drift = value;
+
+                case "meta"
+                    obj.meta = value;s
+                otherwise, error("Unknown var: %s", name);
             end
         end
 
 
-        %% get value function
-        function val = getVar(obj, runIdx, propName)
-            if ~isprop(obj, propName)
-                error('Invalid property name: %s', propName);
+        function out = getVar(obj, name)
+            name = string(name);
+            if ~isprop(obj, name)
+                error('unknown field: %s', name);
             end
 
-        
-            if nargin < 3
-                runIdx = 1; % default to first run
+            if isempty(obj.(name))
+                warning('field "%s" is empty.', name);
+                out = [];
+                return;
             end
-        
-            switch propName
-                case 'OD'
-                    val = obj.RunList{runIdx}.ProcStream.GetVar('dod');
-                case 'T'
-                    val = obj.T;
-                case 'A'
-                    val = obj.A;
-                case 'G'
-                    val = obj.G;
-                otherwise
-                    val = obj.(propName);
-            end
+
+            out = obj.(name);
         end
 
-
+        
     end
 end
+
+

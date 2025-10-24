@@ -1,4 +1,4 @@
-function plot_single_time_base(app)
+function plot_single_time_base(app, ssdot)
     function idxBasis = get_idxBasis()
         % Vu: in the derivatives/homer/ProcStreamFunctionsSummary.txt you can
         % find idx Basis in line 36: 
@@ -130,5 +130,6 @@ function plot_single_time_base(app)
     figure; plot(squeeze(T.T_HbO_brain));title("convolved HbO tbasis"); legend('cond1','cond2');
     figure; plot(squeeze(T.T_HbO_brain));title("convolved HbR tbasis"); legend('cond1','cond2');
     % VU help me save T to global space
-    save_global_data(app, 'T', T)
+    % save_global_data(app, 'T', T)
+    ssdot.setVar('T', T);
 end

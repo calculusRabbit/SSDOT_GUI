@@ -1,7 +1,8 @@
-function plotSD(app, event)
+function plotSD(app, ssdot)
 % Get the AtlasState structure stored earlier
-hFig = app.UIFigure;
-AtlasState = getappdata(hFig, 'AtlasState');
+% hFig = app.UIFigure;
+% AtlasState = getappdata(hFig, 'AtlasState');
+AtlasState = ssdot.getVar('AtlasState');
 
 % Check if it exists
 if isempty(AtlasState)

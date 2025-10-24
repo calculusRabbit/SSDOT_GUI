@@ -1,8 +1,9 @@
-function plot_kernels(app)
+function plot_kernels(app, ssdot)
 
-Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
-cfg = get_global_variable(app, 'cfg');
-Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
+% cfg = get_global_variable(app, 'cfg');
+cfg = ssdot.getVar('cfg');
+% Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
+Sensitivity_Matrix = ssdot.getVar('Sensitivity_Matrix');
 
 M = Sensitivity_Matrix.M;
 

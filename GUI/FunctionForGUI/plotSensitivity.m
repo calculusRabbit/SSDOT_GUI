@@ -1,9 +1,11 @@
-function plotSensitivity(app)
+function plotSensitivity(app, ssdot)
 
 value = app.DisplaySensitivityDropDown.Value;
 
-AtlasState = get_global_variable(app, 'AtlasState');
-Sensitivity = get_global_variable(app, 'Sensitivity_Matrix');
+% AtlasState = get_global_variable(app, 'AtlasState');
+AtlasState= ssdot.getVar('AtlasState');
+% Sensitivity = get_global_variable(app, 'Sensitivity_Matrix');
+Sensitivity = ssdot.getVar('Sensitivity_Matrix');
 
 % --- Create a new figure as a child of the app ---
 fig = figure('Name', 'Atlas Viewer', ...

@@ -1,4 +1,4 @@
-function loadAllFile(app, root, group)
+function loadAllFile(ssdot, root, group)
     % Rebase path and load each node in the hierarchy
     parentPath = filesepStandard(root, 'dir');
     rebasePaths(group, parentPath);
@@ -36,6 +36,9 @@ function loadAllFile(app, root, group)
 
                     err = safeLoad(group(c).subjs(i).sess(j).runs(k));
                     checkLoad(txa, err, 3);
+
+                    % save all runs to ssdot
+                    ssdot.setVar('Run', group(c).subjs(i).sess(j).runs(k));
                 end
             end
 

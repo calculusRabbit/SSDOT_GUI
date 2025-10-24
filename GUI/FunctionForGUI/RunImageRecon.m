@@ -1,9 +1,13 @@
-function RunImageRecon(app)
+function RunImageRecon(app, ssdot)
     %% Calculate H: H = [OD_SS, OD_drift, H_brain, H_scalp]
-    A = get_global_variable(app,'A');
-    G = get_global_variable(app,'G');
-    Y = get_global_variable(app,'Y');
-    T = get_global_variable(app,'T');
+    % A = get_global_variable(app,'A');
+    A = ssdot.getVar('A');
+    % G = get_global_variable(app,'G');
+    G = ssdot.getVar('G');
+    % Y = get_global_variable(app,'Y');
+    Y = ssdot.GetVar('Y');
+    % T = get_global_variable(app,'T');
+    T = ssdot.GetVar('T');
     device = 'gpu'; % Vu: need user input; either GPU or CPU
     n_batch_brain = 1;
     n_batch_scalp = 1; % in the future may try to estimate the GPU/CPU memory capacity first
@@ -12,8 +16,10 @@ function RunImageRecon(app)
     fprintf('start to use GPU')
     [H_brain,H_scalp] = make_H_matrix(A, G, T, Y, device, n_batch_brain,n_batch_scalp); % VU THIS STEP TAKES VERY LONG MAKE A PROGRESS BAR
     toc
-    save_global_data(app,'H_brain',H_brain)
-    save_global_data(app,'H_scalp',H_scalp)
+    % save_global_data(app,'H_brain',H_brain)
+    H = struct('H_brain', H_brain, 'H_scalp', H_scalp);
+    ssdot.setVar('H', H);
+    % save_global_data(app,'H_scalp',H_scalp)
 
     %% calculate HTH and HTY
     chunk = 1024;
@@ -38,8 +44,10 @@ function RunImageRecon(app)
         chunk = 1024; % not sure why i set it to 1024 but we can keep it for now
 
         [HTY, HTH] = make_HTY_and_HTH(H_brain,    H_scalp,    OD_SS, OD_drift, Y, chunk, device, R);
-        save_global_data(app, 'HTH', HTH);
-        save_global_data(app, 'HTY', HTY);
+        % save_global_data(app, 'HTH', HTH);
+        ssdot.setVar('HTH', HTH);
+        % save_global_data(app, 'HTY', HTY);
+        ssdot.setVar('HTY', HTY);
     end
 
     if cfg.regularization == 3
@@ -88,7 +96,8 @@ function RunImageRecon(app)
         end
         
     end
-    save_global_data(app, 'b', b);
+    % save_global_data(app, 'b', b);
+    ssdot.setVar('b', b);
     fprintf('finished recon; b saved!\n')
 
     device='gpu'; % get user input
