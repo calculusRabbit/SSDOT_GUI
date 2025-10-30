@@ -38,8 +38,10 @@ function RunImageRecon(app, ssdot)
     end
 
     if cfg.regularization ~= 3
-        OD_SS = get_global_variable(app,'OD_SS');
-        OD_drift = get_global_variable(app,'OD_drift');
+        % OD_SS = get_global_variable(app,'OD_SS');
+        OD_SS = ssdot.getVar('OD_SS');
+        % OD_drift = get_global_variable(app,'OD_drift');
+        OD_drift = ssdot.getVar('OD_drift');
         Y = get_global_variable(app,'Y');
         chunk = 1024; % not sure why i set it to 1024 but we can keep it for now
 

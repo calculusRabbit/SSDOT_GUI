@@ -20,10 +20,11 @@ function plot_single_time_base(app, ssdot)
     
     function [tHRF,dt] = get_tHRF()
         % Vu: please revise here so that it will loop the files in sess01
-        data =  load('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\derivatives\homer\sess01\2025-08-29_001.mat','output');
-        
-        
+        % data =  load('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\derivatives\homer\sess01\2025-08-29_001.mat','output');
+        data = ssdot.getVar('RunSelected').procStream;
         output = data.output;
+        
+        % output = data.output;
         t = output.dod.time;
 
         dt = t(2) - t(1);
@@ -46,15 +47,19 @@ function plot_single_time_base(app, ssdot)
         % where you can find nT from selected run: derivatives folder
         % check if a run is selected - list
         % check if run level is selected - ratio buttone
-        data =  load('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\derivatives\homer\sess01\2025-08-29_001.mat','output');
+        % data =  load('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\derivatives\homer\sess01\2025-08-29_001.mat','output');
+        data = ssdot.getVar('RunSelected').procStream;
         output = data.output;
+        
+        % output = data.output;
         t = output.dod.time;
         nT = length(t);
     end
 
     function nCond = get_nCond()
         % where you can find snirf from selected run
-        snirf = SnirfClass('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\sess01\2025-08-29_001.snirf');
+        % snirf = SnirfClass('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\sess01\2025-08-29_001.snirf');
+
         t = snirf.GetTimeCombined();
         stimStates = snirf.GetStims(t);
         lstCond = find(sum(stimStates == 1, 1) > 0);
@@ -67,7 +72,8 @@ function plot_single_time_base(app, ssdot)
         %%%%%%%%%%%%%%%%
         % Get only indices of conditions with any stimStates that are 1
         % where you can find snirf from selected run
-        snirf = SnirfClass('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\sess01\2025-08-29_001.snirf');
+        % snirf = SnirfClass('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\sess01\2025-08-29_001.snirf');
+        snirf = ssdot.getVar('RunSelected').acquired;
         t = snirf.GetTimeCombined();
         stimStates = snirf.GetStims(t);
         dt = t(2) - t(1);

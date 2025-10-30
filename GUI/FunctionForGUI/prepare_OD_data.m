@@ -98,6 +98,8 @@ function prepare_OD_data(app, ssdot)
             OD_drift(time_points*active_channel_number/2 + i:active_channel_number/2:time_points*active_channel_number, active_channel_number*n_drifter/2 + (i-1)*n_drifter+j) = D(:,j);
         end
     end
-    save_global_data(app, 'OD_SS', OD_SS)
-    save_global_data(app, 'OD_drift', OD_drift)
+    % save_global_data(app, 'OD_SS', OD_SS)
+    ssdot.setVar('OD_SS', OD_SS);
+    % save_global_data(app, 'OD_drift', OD_drift)
+    ssdot.setVar('OD_drift');
 end
