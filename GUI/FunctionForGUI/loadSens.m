@@ -23,7 +23,7 @@ wavelength = run1.GetWls();
 % definput = {'-2'};  % Default value
 
 % answer = inputdlg(prompt, dlgtitle, dims, definput);
-% cfg = ssdot.getVar('cfg');
+cfg = ssdot.getVar('cfg');
 mask_threshold = cfg.threshold_sensitivity;
 
 % If user presses Cancel, exit
