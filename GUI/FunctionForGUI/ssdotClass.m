@@ -16,7 +16,7 @@ classdef ssdotClass < handle
         OD_SS = [] % matrix
         OD_drift = [] % matrix
         H
-        b
+        
         HTH
         HTY
 
@@ -33,11 +33,13 @@ classdef ssdotClass < handle
     methods (Access = public)
         function obj = ssdotClass()
             % default
+            addpath(genpath('code'));
             obj.cfg = struct( ...
                 'threshold_brain', 5, ...
                 'threshold_scalp', 5, ...
                 'sigma_brain', 5, ...
                 'sigma_scalp', 5, ...
+                'spatially_regu', 0, ...
                 'threshold_sensitivity', -2);
         end
 
@@ -45,16 +47,12 @@ classdef ssdotClass < handle
         function setVar(obj, name, value)
             switch string(name)
                 case "Run"
-                    if isa(value, 'RunClass')
-                        idx = value.iRun;
-                        obj.RunList(idx) = value;
-                        fprintf('Run asigned\n');
-                    else
-                        error('Expected a RunClass object for property "Run".');
-                    end
-
+                    obj.checkRun(value);
+                    idx = value.iRun;
+                    obj.RunList(idx) = value;
+                    
                 case 'selectedrun'
-                    assert(isa(value,'RunClass'), 'selectedRun must be a RunClass object.');
+                    obj.checkSelectedRun(value);
                     obj.selectedRun = value;
                     
                 case "AtlasState"
@@ -121,12 +119,96 @@ classdef ssdotClass < handle
         
     end
 
+
+
+    %% load function
+    methods (Access = public)
+        function loadSens(obj)
+            folderPath = uigetdir(pwd, 'Select AtlasViewer Folder which contains fw folder');
+
+            if isequal(folderPath, 0)
+                disp('User canceled folder selection.');
+                return;
+            end
+
+            disp(['Selected folder: ', folderPath]);
+
+            mlActAuto = []; % we need to do something here later
+            % atlasViewer = get_global_variable(app, 'AtlasState');
+            atlasViewer = ssdot.getVar('AtlasState');
+            % wavelength = [760 850]; % Vu we need users to input this or we get this information from snirf
+            run1 = ssdot.getVar('RunList');
+            run1 = run1(1);
+            wavelength = run1.GetWls();
+            %% Prompt the user for a mask threshold value
+            % prompt = {'Enter threshold of sensitivity'};
+            % dlgtitle = 'Input Threshold';
+            % dims = [1 35];
+            % definput = {'-2'};  % Default value
+
+            % answer = inputdlg(prompt, dlgtitle, dims, definput);
+            mask_threshold = obj.cfg.threshold_sensitivity;
+
+            % If user presses Cancel, exit
+            % if isempty(answer)
+            %     return;
+            % end
+
+
+
+            % Convert input from string to numeric
+            %mask_threshold = str2double(answer{1});
+
+            % Validate the input
+            if isnan(mask_threshold)
+                uialert(app.UIFigure, 'Invalid input. Please enter a numeric value.', 'Error');
+                return;
+            end
+
+
+            % wavelength = [760 850]; % Vu please also get users to input this or we get this information from snirf
+            spatially_regu = obj.cfg.spatially_regu; % Vu: get user input, either 0-no or 1-yes
+            Sensitivity_Matrix = Get_A_dot(folderPath,7,mlActAuto,spatially_regu,atlasViewer, wavelength, mask_threshold);
+
+            obj.setVar('Sensitivity_Matrix', Sensitivity_Matrix);
+
+            M = Make_mask(mask_threshold, Sensitivity_Matrix.Adot_orig, Sensitivity_Matrix.Adot_scalp_orig);
+            % save_global_data(app,'M',M);
+            ssdot.setVar('M', M);
+
+            A = Make_A_matrix(Sensitivity_Matrix.Adot, Sensitivity_Matrix.Adot_scalp, Sensitivity_Matrix.E,  M);
+            % save_global_data(app,'A',A);
+            ssdot.setVar('A', A);
+
+            disp('calculate A finished');
+            
+        end
+
+
+    end
+
     %% helper
     methods (Access = private)
         function checkAtlasState(~, AtlasState)
             assert(isstruct(AtlasState), 'AtlasState must be a struct (loaded from .mat).');
             assert(isfield(AtlasState,'probe'),   'AtlasState.probe missing.');
             assert(isfield(AtlasState,'fwmodel'), 'AtlasState.fwmodel missing.');
+        end
+
+
+        function checkRun(~, run)
+            if ~(isa(run, 'RunClass'))
+                LoggerWindow.log('error', 'Expected a RunClass object for property "Run".');
+                error('Expected a RunClass object for property "Run".');
+            end
+        end
+
+
+        function checkSelectedRun(~, run) 
+            if ~isa(value,'RunClass')
+                LoggerWindow.log('error', 'Expected a RunClass object for property "Run".');
+                error('Expected a RunClass object for property "Run".');
+            end
         end
 
 

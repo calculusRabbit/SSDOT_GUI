@@ -7,7 +7,9 @@ Sensitivity_Matrix = ssdot.getVar('Sensitivity_Matrix');
 
 M = Sensitivity_Matrix.M;
 
-atlasViewer = get_global_variable(app, 'AtlasState');
+% atlasViewer = get_global_variable(app, 'AtlasState');
+atlasViewer = ssdot.getVar('AtlasState');
+
 brain_vertices = atlasViewer.fwmodel.mesh.vertices; %20004*3
 scalp_vertices = atlasViewer.fwmodel.mesh_scalp.vertices; %9563*3
 

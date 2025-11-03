@@ -6,7 +6,7 @@ function prepare_OD_data(app, ssdot)
     % VU this needs to look at which run is selected
     % data = load('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\derivatives\homer\sess01\2025-08-29_001.mat');
     % OD  = data.output.dod.dataTimeSeries;
-    data = ssdot.getVar('RunSelected').procStream;
+    data = ssdot.getVar('selectedRun').procStream;
     OD = data.output.dod.dataTimeSeries;
 
     [time_points,n_channels] = size(OD);
