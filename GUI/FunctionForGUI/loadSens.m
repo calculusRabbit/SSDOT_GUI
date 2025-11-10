@@ -7,6 +7,7 @@ if isequal(folderPath, 0)
     return;
 end
 
+LoggerWindow.log('info', sprintf('Selected folder: %s', folderPath));
 disp(['Selected folder: ', folderPath]);
 
 mlActAuto = []; % we need to do something here later
@@ -44,7 +45,8 @@ end
 
 
 % wavelength = [760 850]; % Vu please also get users to input this or we get this information from snirf
-spatially_regu = 0; % Vu: get user input, either 0-no or 1-yes
+% spatially_regu = 0; % Vu: get user input, either 0-no or 1-yes
+spatially_regu = cfg.spatially_regu;
 Sensitivity_Matrix = Get_A_dot(folderPath,7,mlActAuto,spatially_regu,atlasViewer, wavelength, mask_threshold);
 
 % hFig =  app.UIFigure;

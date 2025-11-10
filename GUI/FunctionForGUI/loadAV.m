@@ -15,6 +15,6 @@ AtlasState = load(fullfile(path,file));
 % hFig =  app.UIFigure;
 % setappdata(hFig, 'AtlasState', AtlasState);
 ssdot.setVar('AtlasState', AtlasState);
-
+LoggerWindow.log('info', 'AtlasState is loaded');
 disp('AtlasState loaded and stored in GUI.');
 end

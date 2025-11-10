@@ -55,7 +55,8 @@ function prepare_OD_data(app, ssdot)
         shortSepChLst = lst(find(rhoSD<rhoSD_ssThresh));
         % Vu: how to get mlActAuto:
         % C:\Users\q582z568\Documents\SSDOT_GUI\ST001\derivatives\homer\sess01\2025-08-29_001.mat
-        output = load('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\derivatives\homer\sess01\2025-08-29_001.mat','output');
+        % output = load('C:\Users\q582z568\Documents\SSDOT_GUI\ST001\derivatives\homer\sess01\2025-08-29_001.mat','output');
+        output = ssdot.getVar('selectedRun').procStream;
         mlActAuto = output.output.misc.mlActAuto;
         if size(ml,1) ~= size( mlActAuto{1,1},1)
             mlActAuto{1,1}([51 102],:) = [];
@@ -101,5 +102,5 @@ function prepare_OD_data(app, ssdot)
     % save_global_data(app, 'OD_SS', OD_SS)
     ssdot.setVar('OD_SS', OD_SS);
     % save_global_data(app, 'OD_drift', OD_drift)
-    ssdot.setVar('OD_drift');
+    ssdot.setVar('OD_drift', OD_drift);
 end

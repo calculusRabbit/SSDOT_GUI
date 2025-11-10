@@ -58,6 +58,7 @@ classdef ssdotClass < handle
                 case "AtlasState"
                     obj.checkAtlasState(value);
                     obj.AtlasState = value;
+                    LoggerWindow.log('info', 'AtlasState is loaded');
                     
                 case "Sensitivity_Matrix"
                     obj.checkSentivityMatrix(value);
@@ -83,7 +84,7 @@ classdef ssdotClass < handle
                     obj.cfg = value;
 
                 case "Y"
-                    obj.checkY(Value);
+                    obj.checkY(value);
                     obj.Y = value;
 
                 case "OD_SS"
@@ -371,7 +372,7 @@ classdef ssdotClass < handle
 
             % Required fields
             requiredFields = ["T_HbO_brain", "T_HbR_brain", "t_HbO_brain", "t_HbR_brain", ...
-                            "T_HbO_scalp", "T_HbR_scalp", "t_HbO_scalp", "t_HbR_scalp"];
+                            "T_HbO_scalp", "T_HbR_scalp"];
             if ~all(isfield(T, requiredFields))
                 LoggerWindow.log('error', 'T is missing one or more required fields.');
                 error('T is missing one or more required fields.');

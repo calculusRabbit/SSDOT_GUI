@@ -5,9 +5,9 @@ function RunImageRecon(app, ssdot)
     % G = get_global_variable(app,'G');
     G = ssdot.getVar('G');
     % Y = get_global_variable(app,'Y');
-    Y = ssdot.GetVar('Y');
+    Y = ssdot.getVar('Y');
     % T = get_global_variable(app,'T');
-    T = ssdot.GetVar('T');
+    T = ssdot.getVar('T');
     device = 'gpu'; % Vu: need user input; either GPU or CPU
     n_batch_brain = 1;
     n_batch_scalp = 1; % in the future may try to estimate the GPU/CPU memory capacity first
@@ -105,14 +105,17 @@ function RunImageRecon(app, ssdot)
     device='gpu'; % get user input
     with_scalp = 0; % usually we don't vis scalp 
     n_batch = 1; % may need to change according to cpu or gpu capacity
-    G = get_global_variable(app,'G');
-    T = get_global_variable(app,'T');
+    % G = get_global_variable(app,'G');
+    G = ssdot.getVar('G');
+    % T = get_global_variable(app,'T');
+    T = ssdot.getVar('T');
     Conc = approximate_Conc(G, T, b, n_batch, with_scalp, device);
     save_global_data(app, 'Conc', Conc);
     fprintf('generate Conc saved!\n')
     n_vertex_brain = 20004; % Vu: this can be read from AV file
     [HbO, HbR] = project2vertex(app, n_vertex_brain);
-    AtlasState = get_global_variable(app, 'AtlasState');
+    % AtlasState = get_global_variable(app, 'AtlasState');
+    AtlasState = ssdot.getVar('AtlasState');
     brain_vertices = AtlasState.pialsurf.mesh_reduced.vertices;
     faces = AtlasState.pialsurf.mesh_reduced.faces;
     
