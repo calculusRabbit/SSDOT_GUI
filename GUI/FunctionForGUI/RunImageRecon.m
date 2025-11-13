@@ -8,7 +8,9 @@ function RunImageRecon(app, ssdot)
     Y = ssdot.getVar('Y');
     % T = get_global_variable(app,'T');
     T = ssdot.getVar('T');
-    device = 'gpu'; % Vu: need user input; either GPU or CPU
+
+    cfg = ssdot.getVar('cfg');
+    device = cfg.device; % Vu: need user input; either GPU or CPU
     n_batch_brain = 1;
     n_batch_scalp = 1; % in the future may try to estimate the GPU/CPU memory capacity first
     tic
@@ -17,15 +19,17 @@ function RunImageRecon(app, ssdot)
     [H_brain,H_scalp] = make_H_matrix(A, G, T, Y, device, n_batch_brain,n_batch_scalp); % VU THIS STEP TAKES VERY LONG MAKE A PROGRESS BAR
     toc
     % save_global_data(app,'H_brain',H_brain)
+    % save_global_data(app,'H_scalp',H_scalp)
+
     H = struct('H_brain', H_brain, 'H_scalp', H_scalp);
     ssdot.setVar('H', H);
-    % save_global_data(app,'H_scalp',H_scalp)
 
     %% calculate HTH and HTY
     chunk = 1024;
-    cfg.regularization = 1;
-    cfg.alpha = 1e-2; % Vu: need to get user input
-    cfg.beta = 0;% Vu: need to get user input
+    % cfg.regularization = 1;
+    % cfg.alpha = 1e-2; % Vu: need to get user input
+    % cfg.beta = 0;% Vu: need to get user input
+
 
     if cfg.regularization == 2
         Observations = [OD_w1', OD_w2'];
@@ -39,16 +43,17 @@ function RunImageRecon(app, ssdot)
 
     if cfg.regularization ~= 3
         % OD_SS = get_global_variable(app,'OD_SS');
-        OD_SS = ssdot.getVar('OD_SS');
         % OD_drift = get_global_variable(app,'OD_drift');
+        OD_SS = ssdot.getVar('OD_SS');
         OD_drift = ssdot.getVar('OD_drift');
-        Y = get_global_variable(app,'Y');
+        % Y = get_global_variable(app,'Y');
+        Y = ssdot.getVar('Y');
         chunk = 1024; % not sure why i set it to 1024 but we can keep it for now
 
         [HTY, HTH] = make_HTY_and_HTH(H_brain,    H_scalp,    OD_SS, OD_drift, Y, chunk, device, R);
         % save_global_data(app, 'HTH', HTH);
-        ssdot.setVar('HTH', HTH);
         % save_global_data(app, 'HTY', HTY);
+        ssdot.setVar('HTH', HTH);
         ssdot.setVar('HTY', HTY);
     end
 
@@ -62,8 +67,10 @@ function RunImageRecon(app, ssdot)
         calculated_mat.b = b;
     else
 
-        HTH = get_global_variable(app,'HTH');
-        HTY = get_global_variable(app,'HTY');
+        % HTH = get_global_variable(app,'HTH');
+        % HTY = get_global_variable(app,'HTY');
+        HTH = ssdot.getVar('HTH');
+        HTY = ssdot.getVar('HTY');
         if ~isfield(cfg,'beta')
             % first regularization method
             alpha = cfg.alpha;
@@ -78,8 +85,11 @@ function RunImageRecon(app, ssdot)
             alpha = cfg.alpha;
             beta = cfg.beta;
 
-            H_brain = get_global_variable(app, 'H_brain');
-            H_scalp = get_global_variable(app, 'H_scalp');
+            % H_brain = get_global_variable(app, 'H_brain');
+            % H_scalp = get_global_variable(app, 'H_scalp');
+            H = ssdot.getVar('H');
+            H_brain = H.H_brain;
+            H_scalp= H.H_scalp;
     
             n_brain = size(H_brain,2);
             n_scalp = size(H_scalp,2);
@@ -102,7 +112,7 @@ function RunImageRecon(app, ssdot)
     ssdot.setVar('b', b);
     fprintf('finished recon; b saved!\n')
 
-    device='gpu'; % get user input
+
     with_scalp = 0; % usually we don't vis scalp 
     n_batch = 1; % may need to change according to cpu or gpu capacity
     % G = get_global_variable(app,'G');
@@ -110,12 +120,14 @@ function RunImageRecon(app, ssdot)
     % T = get_global_variable(app,'T');
     T = ssdot.getVar('T');
     Conc = approximate_Conc(G, T, b, n_batch, with_scalp, device);
-    save_global_data(app, 'Conc', Conc);
+    % save_global_data(app, 'Conc', Conc);
+    ssdot.setVar('Conc', Conc);
     fprintf('generate Conc saved!\n')
-    n_vertex_brain = 20004; % Vu: this can be read from AV file
-    [HbO, HbR] = project2vertex(app, n_vertex_brain);
-    % AtlasState = get_global_variable(app, 'AtlasState');
+    % n_vertex_brain = 20004; % Vu: this can be read from AV file
     AtlasState = ssdot.getVar('AtlasState');
+    n_vertex_brain = size(AtlasState.fwmodel.mesh.vertices,1); 
+    
+    [HbO, HbR] = project2vertex(ssdot, n_vertex_brain);
     brain_vertices = AtlasState.pialsurf.mesh_reduced.vertices;
     faces = AtlasState.pialsurf.mesh_reduced.faces;
     

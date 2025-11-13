@@ -1,6 +1,6 @@
-function plotSensitivity(app, ssdot)
+function plotSensitivity(app, ssdot, str)
 
-value = app.DisplaySensitivityDropDown.Value;
+value = str;
 
 % AtlasState = get_global_variable(app, 'AtlasState');
 AtlasState= ssdot.getVar('AtlasState');
@@ -17,7 +17,7 @@ fig = figure('Name', 'Atlas Viewer', ...
              'HandleVisibility', 'callback', ...
              'CloseRequestFcn', @(src,evt) delete(src));
 % So if app closes, this figure also closes
-addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
+% addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
 
 % --- First axes (e.g., left plot)
 ax1 = axes('Parent', fig, 'Position', [0.1 0.1 0.35 0.8]); 

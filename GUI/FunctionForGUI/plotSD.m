@@ -4,7 +4,7 @@ function plotSD(app, ssdot)
 % AtlasState = getappdata(hFig, 'AtlasState');
 AtlasState = ssdot.getVar('AtlasState');
 
-Check if it exists
+% Check if it exists
 if isempty(AtlasState)
     LogggerWindow.log("error", "Please load AtlasViewer data first");
     return;

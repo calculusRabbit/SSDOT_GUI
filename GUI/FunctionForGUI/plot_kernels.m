@@ -30,7 +30,7 @@ fig = figure('Name', 'Kernels', ...
              'HandleVisibility', 'callback', ...
              'CloseRequestFcn', @(src,evt) delete(src));
 % So if app closes, this figure also closes
-addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
+%addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
 
 % --- First axes (e.g., left plot)
 ax1 = axes('Parent', fig, 'Position', [0.1 0.1 0.35 0.8]); 
@@ -68,7 +68,7 @@ fig = figure('Name', 'Kernels', ...
              'HandleVisibility', 'callback', ...
              'CloseRequestFcn', @(src,evt) delete(src));
 % So if app closes, this figure also closes
-addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
+% addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
 
 % --- First axes (e.g., left plot)
 ax1 = axes('Parent', fig, 'Position', [0.1 0.1 0.35 0.8]); 

@@ -14,8 +14,7 @@ mlActAuto = []; % we need to do something here later
 % atlasViewer = get_global_variable(app, 'AtlasState');
 atlasViewer = ssdot.getVar('AtlasState');
 % wavelength = [760 850]; % Vu we need users to input this or we get this information from snirf
-run1 = ssdot.getVar('RunList');
-run1 = run1(1);
+run1 = ssdot.getVar('selectedRun');
 wavelength = run1.GetWls();
 %% Prompt the user for a mask threshold value
 % prompt = {'Enter threshold of sensitivity'};
