@@ -6,7 +6,7 @@ atlasViewer = ssdot.getVar('AtlasState');
 % Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
 Sensitivity_Matrix = ssdot.getVar('Sensitivity_Matrix');
 
-ssdot.setVar('cfg', cfg);
+cfg = ssdot.getVar('cfg');
 
 G = Make_G_matrix(atlasViewer, Sensitivity_Matrix.M, ...
     cfg.threshold_brain, cfg.threshold_scalp, cfg.sigma_brain, cfg.sigma_scalp, ...
