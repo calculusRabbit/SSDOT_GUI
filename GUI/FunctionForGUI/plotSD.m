@@ -1,14 +1,14 @@
-function plotSD(app, event)
+function plotSD(app, ssdot)
 % Get the AtlasState structure stored earlier
-hFig = app.UIFigure;
-AtlasState = getappdata(hFig, 'AtlasState');
+% hFig = app.UIFigure;
+% AtlasState = getappdata(hFig, 'AtlasState');
+AtlasState = ssdot.getVar('AtlasState');
 
 % Check if it exists
 if isempty(AtlasState)
-    uialert(app.UIFigure, 'Please load AtlasViewer data first.', 'Data Missing');
+    LogggerWindow.log("error", "Please load AtlasViewer data first");
     return;
 end
-
 % --- Create a new figure as a child of the app ---
 fig = figure('Name', 'Atlas Viewer', ...
              'NumberTitle', 'off', ...

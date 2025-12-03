@@ -1,12 +1,15 @@
-function plot_kernels(app)
+function plot_kernels(app, ssdot)
 
-Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
-cfg = get_global_variable(app, 'cfg');
-Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
+% cfg = get_global_variable(app, 'cfg');
+cfg = ssdot.getVar('cfg');
+% Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
+Sensitivity_Matrix = ssdot.getVar('Sensitivity_Matrix');
 
 M = Sensitivity_Matrix.M;
 
-atlasViewer = get_global_variable(app, 'AtlasState');
+% atlasViewer = get_global_variable(app, 'AtlasState');
+atlasViewer = ssdot.getVar('AtlasState');
+
 brain_vertices = atlasViewer.fwmodel.mesh.vertices; %20004*3
 scalp_vertices = atlasViewer.fwmodel.mesh_scalp.vertices; %9563*3
 
@@ -27,7 +30,7 @@ fig = figure('Name', 'Kernels', ...
              'HandleVisibility', 'callback', ...
              'CloseRequestFcn', @(src,evt) delete(src));
 % So if app closes, this figure also closes
-addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
+%addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
 
 % --- First axes (e.g., left plot)
 ax1 = axes('Parent', fig, 'Position', [0.1 0.1 0.35 0.8]); 
@@ -65,7 +68,7 @@ fig = figure('Name', 'Kernels', ...
              'HandleVisibility', 'callback', ...
              'CloseRequestFcn', @(src,evt) delete(src));
 % So if app closes, this figure also closes
-addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
+% addlistener(app, 'ObjectBeingDestroyed', @(~,~) delete(fig));
 
 % --- First axes (e.g., left plot)
 ax1 = axes('Parent', fig, 'Position', [0.1 0.1 0.35 0.8]); 

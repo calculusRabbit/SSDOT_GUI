@@ -1,4 +1,4 @@
-function [H_brain, H_scalp] = make_H_matrix(A, G, T, Y, device, cfg)
+function [H_brain, H_scalp] = make_H_matrix(A, G, T, Y, device, n_batch_brain,n_batch_scalp)
 
 canUseGPU=true;
 
@@ -21,7 +21,7 @@ if strcmp(device, 'gpu')
         fprintf('no GPU. Using cpu now\n')
     end
     %% calculate H_brain
-    n_batch = cfg.n_batch_brain;
+    n_batch = n_batch_brain;
     H_finished = false;
     i = 1;
     while i <= 100
@@ -42,15 +42,19 @@ if strcmp(device, 'gpu')
     end
     %% calculate H_scalp
 
-    n_batch = cfg.n_batch_scalp;
+    n_batch = n_batch_scalp;
     H_finished = false;
     i = 1;
     while i <= 100
         try
             H_scalp = calculate_H_batch_gpu(A.Amatrix_scalp, G.G_scalp, T.T_HbO_scalp, T.T_HbR_scalp, Y, n_batch);
             H_finished = true;
+            disp('H_scalp calculation finished successfully.');
             break
-        catch
+        catch ME
+            fprintf('Error occurred at iteration %d with n_batch = %d:\n%s\n', ...
+            i, n_batch, ME.message);
+            
             n_batch = n_batch*2;
             i = i + 1;
             continue
@@ -89,8 +93,12 @@ w1_HbR = gpuArray(A.w1_HbR);
 w2_HbO = gpuArray(A.w2_HbO);
 w2_HbR = gpuArray(A.w2_HbR);
 
+h = waitbar(0, 'Processing...');
+
 i_g = 1;
 while i_g <= n_g
+    waitbar(i_g/n_g, h, sprintf('Progress: %d%%', round(100*i_g/n_g)));
+
     g_start     =   i_g;
     g_end       =   i_g + n_g_batch - 1 ;
     if g_end > n_g
