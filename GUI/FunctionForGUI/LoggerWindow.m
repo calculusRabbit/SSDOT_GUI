@@ -1,198 +1,214 @@
 classdef LoggerWindow < handle
-
-    %   LoggerWindow.log('info', 'Loading data...');
-    %   LoggerWindow.log('success', 'Operation complete!');
-    %   LoggerWindow.log('error', 'Something went wrong');
-    %   LoggerWindow.log('warning', 'Low memory detected');
-    %   LoggerWindow.log('debug', 'Debug information');
+    %   LoggerWindow.log('info', 'Operation started');
+    %   LoggerWindow.log('success', 'Operation completed');
+    %   LoggerWindow.log('warning', 'Low memory');
+    %   LoggerWindow.log('error', 'Failed to load file');
+    %   LoggerWindow.show();    % Show the window
+    %   LoggerWindow.hide();    % Hide the window
+    %   LoggerWindow.clear();   % Clear all logs
     
     properties (Access = private)
-        Figure
+        Fig
         TextArea
-        ClearButton
         SaveButton
-    end
-    
-    properties (Access = private, Constant)
-        MaxLines = 1000  % Maximum number of log lines to keep
+        ClearButton
     end
     
     methods (Access = private)
         function obj = LoggerWindow()
-            % Private constructor - enforces singleton pattern
             obj.createUI();
         end
-    end
-    
-    methods (Access = public)
-        function delete(obj)
-            % Destructor - cleanup
-            if isvalid(obj.Figure)
-                delete(obj.Figure);
-            end
-        end
         
-        function logMessage(obj, level, message)
-            % Add a log message to the window
-            
-            % Get timestamp
-            timestamp = datetime("now");
-            
-            % Format level string with icon
-            switch lower(level)
-                case 'info'
-                    levelStr = '[INFO]';
-                    icon = '▸';
-                case 'success'
-                    levelStr = '[OK]';
-                    icon = '✓';
-                case 'warning'
-                    levelStr = '[WARN]';
-                    icon = '⚠';
-                case 'error'
-                    levelStr = '[ERROR]';
-                    icon = '✖';
-                case 'debug'
-                    levelStr = '[DEBUG]';
-                    icon = '◦';
-                otherwise
-                    levelStr = '[LOG]';
-                    icon = '•';
-            end
-            
-            % Create log entry
-            logEntry = sprintf('[%s] %s %-7s %s', timestamp, icon, levelStr, message);
-            
-            % Print to MATLAB console
-            fprintf('%s\n', logEntry);
-            
-            % Add to text area if window exists
-            if isvalid(obj.Figure) && isvalid(obj.TextArea)
-                currentLog = obj.TextArea.Value;
-                
-                % Initialize or append
-                if isempty(currentLog) || (numel(currentLog) == 1 && isempty(currentLog{1}))
-                    obj.TextArea.Value = {logEntry};
-                else
-                    % Limit number of lines (prevent memory issues)
-                    if numel(currentLog) >= obj.MaxLines
-                        currentLog = currentLog(end - obj.MaxLines + 2 : end);
-                    end
-                    obj.TextArea.Value = [currentLog; {logEntry}];
-                end
-                
-                drawnow;
-            end
-        end
-        
-        function clearLog(obj)
-            % Clear all log messages
-            if isvalid(obj.TextArea)
-                obj.TextArea.Value = {''};
-                fprintf('Logger cleared\n');
-            end
-        end
-    end
-    
-    methods (Access = private)
         function createUI(obj)
-            % Create the logger UI window
+            % Create the logger window
+            obj.Fig = uifigure('Name', 'Log Window', ...
+                              'Position', [100 100 700 450], ...
+                              'Visible', 'off', ...
+                              'CloseRequestFcn', @(~,~) obj.hideWindow());
             
-            obj.Figure = uifigure('Name', 'SSDOT Logger', ...
-                                  'Position', [700 100 650 550]);
-            
-            % Main grid layout
-            grid = uigridlayout(obj.Figure, [3 2]);
-            grid.RowHeight = {'fit', '1x', 'fit'};
-            grid.ColumnWidth = {'1x', '1x'};
+            % main grid
+            grid = uigridlayout(obj.Fig, [2 1]);
+            grid.RowHeight = {'1x', 45};
             grid.Padding = [10 10 10 10];
-            grid.RowSpacing = 8;
-            
-            % Title
-            titleLabel = uilabel(grid, ...
-                                 'Text', 'SSDOT Pipeline Logger', ...
-                                 'FontSize', 14, ...
-                                 'FontWeight', 'bold', ...
-                                 'HorizontalAlignment', 'center');
-            titleLabel.Layout.Row = 1;
-            titleLabel.Layout.Column = [1 2];
+            grid.RowSpacing = 10;
             
             % Text area for logs
-            obj.TextArea = uitextarea(grid, ...
-                                      'Value', {''}, ...
-                                      'Editable', 'off', ...
-                                      'FontName', 'Courier New', ...
-                                      'FontSize', 10);
-            obj.TextArea.Layout.Row = 2;
-            obj.TextArea.Layout.Column = [1 2];
+            obj.TextArea = uitextarea(grid);
+            obj.TextArea.Layout.Row = 1;
+            obj.TextArea.Layout.Column = 1;
+            obj.TextArea.Editable = 'off';
+            obj.TextArea.FontName = 'Courier New';
+            obj.TextArea.FontSize = 10;
+            obj.TextArea.Value = {'Log window ready...'};
+            
+            % Button panel
+            buttonPanel = uipanel(grid, 'BorderType', 'none');
+            buttonPanel.Layout.Row = 2;
+            buttonPanel.Layout.Column = 1;
+            
+            buttonGrid = uigridlayout(buttonPanel, [1 3]);
+            buttonGrid.ColumnWidth = {100, 100, '1x'};
+            buttonGrid.Padding = [0 0 0 0];
+            buttonGrid.ColumnSpacing = 10;
+            
+            % Save Logs button
+            obj.SaveButton = uibutton(buttonGrid, 'Text', 'Save Logs');
+            obj.SaveButton.ButtonPushedFcn = @(~,~) obj.saveLogs();
+            obj.SaveButton.Layout.Row = 1;
+            obj.SaveButton.Layout.Column = 1;
+            obj.SaveButton.Tooltip = 'Save all logs to a text file';
             
             % Clear button
-            obj.ClearButton = uibutton(grid, ...
-                                       'Text', 'Clear Log', ...
-                                       'ButtonPushedFcn', @(~,~) obj.clearLog());
-            obj.ClearButton.Layout.Row = 3;
-            obj.ClearButton.Layout.Column = 1;
-            
-            % Save button
-            obj.SaveButton = uibutton(grid, ...
-                                      'Text', 'Save Log to File', ...
-                                      'ButtonPushedFcn', @(~,~) obj.saveLog());
-            obj.SaveButton.Layout.Row = 3;
-            obj.SaveButton.Layout.Column = 2;
+            obj.ClearButton = uibutton(buttonGrid, 'Text', 'Clear Logs');
+            obj.ClearButton.ButtonPushedFcn = @(~,~) obj.clearLogs();
+            obj.ClearButton.Layout.Row = 1;
+            obj.ClearButton.Layout.Column = 2;
+            obj.ClearButton.Tooltip = 'Clear all log entries';
         end
         
-        function saveLog(obj)
-            % Save log contents to a text file
-            try
-                [file, path] = uiputfile('*.txt', 'Save Log File', ...
-                                         ['ssdot_log_' datestr(now, 'yyyymmdd_HHMMSS') '.txt']);
-                if file ~= 0
-                    fullPath = fullfile(path, file);
-                    logContent = obj.TextArea.Value;
-                    
-                    % Write to file
-                    fid = fopen(fullPath, 'w');
-                    if fid == -1
-                        error('Could not open file for writing');
-                    end
-                    
-                    for i = 1:numel(logContent)
-                        fprintf(fid, '%s\n', logContent{i});
-                    end
-                    fclose(fid);
-                    
-                    obj.logMessage('success', ['Log saved to: ' fullPath]);
-                end
-            catch ME
-                uialert(obj.Figure, ME.message, 'Save Error');
-                obj.logMessage('error', ['Failed to save log: ' ME.message]);
+        function addLogEntry(obj, level, message)
+            % Add a log entry with timestamp and level
+            timestamp = datetime('now', 'Format', 'HH:mm:ss');
+            
+            switch lower(level)
+                case 'info'
+                    prefix = '[INFO]   ';
+                case 'success'
+                    prefix = '[SUCCESS]';
+                case 'warning'
+                    prefix = '[WARNING]';
+                case 'error'
+                    prefix = '[ERROR]  ';
+                otherwise
+                    prefix = '[LOG]    ';
             end
+            
+            logEntry = sprintf('%s %s %s', string(timestamp), prefix, message);
+            
+            % Add to text area
+            currentLogs = obj.TextArea.Value;
+            currentLogs{end+1} = logEntry;
+            obj.TextArea.Value = currentLogs;
+            
+            % Auto-scroll to bottom
+            scroll(obj.TextArea, 'bottom');
+            
+            % Auto-show only for errors (user can still open manually anytime)
+            if strcmp(obj.Fig.Visible, 'off') && strcmpi(level, 'error')
+                obj.showWindow();
+            end
+            
+            drawnow limitrate;
+        end
+        
+        function saveLogs(obj)
+            % Get current time as a datetime object
+            dt = datetime('now'); 
+            
+            dateTimeString = string(dt, 'yyyy-MM-dd_HHmm'); 
+            defaultName = sprintf('logs_%s.txt', dateTimeString);
+            
+            % ask user where to save
+            [file, path] = uiputfile('*.txt', 'Save Logs As', defaultName);
+            
+            % if the user cancelled
+            if file == 0, return; end
+            
+            logs = obj.TextArea.Value;
+            fullPath = fullfile(path, file);
+            
+            % Write the log content to the selected file
+            writecell(logs, fullPath, 'FileType', 'text', 'QuoteStrings', 'none');
+            
+            obj.addLogEntry('success', sprintf('Logs saved to: %s', fullPath));
+        end
+        
+        function clearLogs(obj)
+            % ask before clearing
+            selection = uiconfirm(obj.Fig, ...
+                'Are you sure you want to clear all log messages? This cannot be undone.', ...
+                'Clear Logs', ...
+                'Options', {'Clear', 'Cancel'});
+            
+            if ~strcmp(selection, 'Clear')
+                return; 
+            end
+
+            obj.TextArea.Value = {'Log window cleared...'};
+            obj.addLogEntry('info', 'Logs cleared');
+        end
+        
+        function showWindow(obj)
+            obj.Fig.Visible = 'on';
+            figure(obj.Fig);
+        end
+        
+        function hideWindow(obj)
+            obj.Fig.Visible = 'off';
+        end
+        
+        function visible = isWindowVisible(obj)
+            visible = strcmp(obj.Fig.Visible, 'on');
         end
     end
     
-    %% Static Methods (Singleton Pattern)
+    % ==== SINGLETON SUPPORT ====
+    methods (Static, Access = private)
+        function instance = shared(newInstance)
+            persistent inst
+            if nargin > 0
+                inst = newInstance;
+            end
+            instance = inst;
+        end
+    end
+    
     methods (Static)
-        function obj = getInstance()
-            % Get or create the singleton logger instance
-            persistent instance
-            
+        function log(level, message)
+            instance = LoggerWindow.shared();
             if isempty(instance) || ~isvalid(instance)
                 instance = LoggerWindow();
+                LoggerWindow.shared(instance);
             end
-            
-            obj = instance;
+            instance.addLogEntry(level, message);
         end
         
-        function log(level, message)         
-            logger = LoggerWindow.getInstance();
-            logger.logMessage(level, message);
+        function show()
+            instance = LoggerWindow.shared();
+            if isempty(instance) || ~isvalid(instance)
+                instance = LoggerWindow();
+                LoggerWindow.shared(instance);
+            end
+            instance.showWindow();
+        end
+        
+        function hide()
+            instance = LoggerWindow.shared();
+            if ~isempty(instance) && isvalid(instance)
+                instance.hideWindow();
+            end
         end
         
         function clear()
-            % Clear all log messages
-            % Usage: LoggerWindow.clear();
-            logger = LoggerWindow.getInstance();
-            logger.clearLog();
+            instance = LoggerWindow.shared();
+            if ~isempty(instance) && isvalid(instance)
+                instance.clearLogs();
+            end
+        end
+        
+        function visible = isVisible()
+            instance = LoggerWindow.shared();
+            visible = ~isempty(instance) && isvalid(instance) && instance.isWindowVisible();
+        end
+        
+        function deleteInstance()
+            instance = LoggerWindow.shared();
+            if ~isempty(instance) && isvalid(instance)
+                if isvalid(instance.Fig)
+                    delete(instance.Fig);
+                end
+            end
+            LoggerWindow.shared([]);
         end
     end
 end

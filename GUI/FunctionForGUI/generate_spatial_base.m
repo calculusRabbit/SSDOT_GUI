@@ -6,16 +6,6 @@ atlasViewer = ssdot.getVar('AtlasState');
 % Sensitivity_Matrix = get_global_variable(app, 'Sensitivity_Matrix');
 Sensitivity_Matrix = ssdot.getVar('Sensitivity_Matrix');
 
-% Vu we need to get threshold_brain and _scalp from user input
-% cfg.threshold_brain = 5;
-cfg.threshold_brain = 20; % for testing purposes
-cfg.threshold_scalp = 20;
-% cfg.sigma_brain = 5;
-cfg.sigma_brain = 20; % for testing purposes
-cfg.sigma_scalp = 20;
-% Vu we should save all the user input data in cfg
-% hFig =  app.UIFigure;
-% setappdata(hFig, 'cfg', cfg);
 ssdot.setVar('cfg', cfg);
 
 G = Make_G_matrix(atlasViewer, Sensitivity_Matrix.M, ...
