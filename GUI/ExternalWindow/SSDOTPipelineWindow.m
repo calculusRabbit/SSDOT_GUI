@@ -105,7 +105,9 @@ classdef SSDOTPipelineWindow < handle
             
             fprintf('Pipeline window created successfully!\n');
         end
-        
+
+
+        %% CREATE UI
         function createPropertyStatusPanel(obj)
             % Property status panel that can scrollable
             obj.PropertyPanel = uipanel(obj.MainGrid, ...
@@ -399,7 +401,7 @@ classdef SSDOTPipelineWindow < handle
             obj.StatusLabel.Layout.Column = 2;
         end
         
-        
+        %% 
         function onConfigChanged(obj)
             if isempty(obj.ssdot) || ~isvalid(obj.ssdot)
                 return;
@@ -425,7 +427,9 @@ classdef SSDOTPipelineWindow < handle
             
             % Update ssdot
             obj.ssdot.setVar('cfg', cfg);
-            
+
+
+            % debug
             fprintf('Config updated: device=%s, reg=%d, alpha=%.4f, beta=%.4f, thresh_sens=%.2f, spatial_regu=%d, th_brain=%.2f, th_scalp=%.2f, sigma_brain=%.2f, sigma_scalp=%.2f\n', ...
                 cfg.device, cfg.regularization, cfg.alpha, cfg.beta, ...
                 cfg.threshold_sensitivity, cfg.spatially_regu, ...
@@ -446,7 +450,7 @@ classdef SSDOTPipelineWindow < handle
                         if ~isempty(val)
                             lamp.Color = 'green';
                         else
-                            lamp.Color = [0.7 0.7 0.7];
+                            lamp.Color = [0.7 0.7 0.7]; %gray
                         end
                     else
                         lamp.Color = [0.7 0.7 0.7];
@@ -483,6 +487,30 @@ classdef SSDOTPipelineWindow < handle
             end
             
             button.Enable = 'on';
+        end
+
+        function updateBtnTips(obj)
+            %tips for disable button, update constantly after user load something
+            %tips with require fields
+            tips = {
+                obj.ButtonDisplaySD, {'AtlasState'};
+                obj.ButtonLoadSens, {'AtlasState', 'selectedRun'}
+            };
+
+            for i = 1:numel(tips(:,1))
+                button = tips{i,1};
+                reqFields = tips{i,2};
+
+                if (button.Enable == "off" && ~isempty(reqFields))
+                    missing = {};
+                    for j = 1:numel(reqFields)
+                        if isempty(obj.ssdot.(reqFields{j}))
+                            missing{end+1} = reqFields{j};
+                        end
+                    end
+                    button.Tooltip = sprintf('Missing: %s\nComplete previous steps first.', strjoin(missing, ', '));
+                end
+            end
         end
         
         %%  helper
@@ -606,6 +634,7 @@ classdef SSDOTPipelineWindow < handle
             obj.canEnable(obj.ButtonRunRecon, 'A', 'G', 'Y', 'T', 'OD_SS', 'OD_drift', 'AtlasState');
             
             obj.updatePropertyLamps();
+            obj.updateBtnTips();
         end
 
 
