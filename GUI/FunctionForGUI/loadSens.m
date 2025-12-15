@@ -14,13 +14,10 @@ mlActAuto = []; % we need to do something here later
 % atlasViewer = get_global_variable(app, 'AtlasState');
 atlasViewer = ssdot.getVar('AtlasState');
 % wavelength = [760 850]; % Vu we need users to input this or we get this information from snirf
-run1 = ssdot.getVar('selectedRun');
-wavelength = run1.GetWls();
-%% Prompt the user for a mask threshold value
-% prompt = {'Enter threshold of sensitivity'};
-% dlgtitle = 'Input Threshold';
-% dims = [1 35];
-% definput = {'-2'};  % Default value
+% run1 = ssdot.getVar('selectedRun');
+% wavelength = run1.GetWls();
+wavelength = atlasViewer.probe.lambda; %!!! i also found wavelength(lambda) inside probe!!!
+
 
 % answer = inputdlg(prompt, dlgtitle, dims, definput);
 cfg = ssdot.getVar('cfg');
