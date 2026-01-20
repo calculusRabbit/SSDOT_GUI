@@ -127,7 +127,7 @@ classdef SSDOTPipelineWindow < handle
                 'AtlasState', 'AtlasViewer.mat';
                 'Sensitivity_Matrix', 'Sensitivity data';
                 'M', 'Masks';
-                'A', 'i dont know';
+                'A', 'A';
                 'G', 'Spatial basis';
                 'T', 'Temporal basis';
                 'H', 'H matrix';
