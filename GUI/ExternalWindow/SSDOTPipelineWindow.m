@@ -76,22 +76,23 @@ classdef SSDOTPipelineWindow < handle
             
             if ~isempty(app)
                 obj.App = app;
-                addlistener(app, 'ObjectBeingDestroyed', @(src,evt) delete(obj.Fig)); %so if parenet app close this one also close
+                addlistener(app, 'ObjectBeingDestroyed', @(src,evt) delete(obj.Fig)); %so if parent app close this one also close
             end
             
             % create main window
             obj.Fig = uifigure;
             obj.Fig.Name = 'SSDOT Pipeline';
-            obj.Fig.Position = [100 100 900 650];
+            obj.Fig.Position = [100 100 1000 700];
             obj.Fig.Scrollable = 'on';
+            obj.Fig.AutoResizeChildren = 'on';
             
-            % main grid layout
+            % main grid layout - responsive heights
             obj.MainGrid = uigridlayout(obj.Fig, [7 1]);
-            obj.MainGrid.RowHeight = {120, 55, 55, 55, 55, 55, 35};
-            obj.MainGrid.Padding = [5 5 5 5];
-            obj.MainGrid.RowSpacing = 10;
+            obj.MainGrid.RowHeight = {'2x', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
+            obj.MainGrid.Padding = [10 10 10 10];
+            obj.MainGrid.RowSpacing = 8;
             
-            % Create all pannels for each sections
+            % Create all panels for each sections
             obj.createPropertyStatusPanel();
             obj.createAtlasPanel();
             obj.createSensitivityPanel();
@@ -102,25 +103,27 @@ classdef SSDOTPipelineWindow < handle
             
             % initial UI state
             obj.updateUI();
-            
-            fprintf('Pipeline window created successfully!\n');
         end
 
 
         %% CREATE UI
         function createPropertyStatusPanel(obj)
-            % Property status panel that can scrollable
+            % Property status panel - grid-based responsive layout
             obj.PropertyPanel = uipanel(obj.MainGrid, ...
                 'Title', 'Data Status', ...
-                'Scrollable', 'on', ...
-                'AutoResizeChildren', 'off');
+                'FontSize', 11, ...
+                'FontWeight', 'bold');
             obj.PropertyPanel.Layout.Row = 1;
             obj.PropertyPanel.Layout.Column = 1;
             
-            % Create inner panel with fixed height to force scrolling
-            innerPanel = uipanel(obj.PropertyPanel, ...
-                'BorderType', 'none', ...
-                'Position', [0 0 850 350]);
+            % Use grid layout for responsive design
+            obj.PropertyGrid = uigridlayout(obj.PropertyPanel, [15 3]);
+            obj.PropertyGrid.RowHeight = repmat({'fit'}, 1, 15);
+            obj.PropertyGrid.ColumnWidth = {'fit', 'fit', '1x'};
+            obj.PropertyGrid.Padding = [10 10 10 10];
+            obj.PropertyGrid.RowSpacing = 4;
+            obj.PropertyGrid.ColumnSpacing = 10;
+            obj.PropertyGrid.Scrollable = 'on';
             
             % Property names and descriptions
             target = obj.ssdot.getVar('selectedRun');
@@ -136,48 +139,42 @@ classdef SSDOTPipelineWindow < handle
                 'H', 'H matrix';
                 'Y', 'Optical Density data vector';
                 'OD_SS', 'Short separation Optical Density';
-                'OD_drift', 'Drift OPticalDensity';
+                'OD_drift', 'Drift Optical Density';
                 'HTH', 'H^T * H';
                 'HTY', 'H^T * Y';
                 'Conc', 'Concentration';
                 'b', 'Coefficients';
             };
             
-            % Create lamps and labels with fixed positions
             obj.PropertyLamps = struct();
-            rowHeight = 22;
-            startY = 330;
             
             for i = 1:size(props, 1)
-                yPos = startY - (i-1)*rowHeight;
-                
                 % Lamp
-                lamp = uilamp(innerPanel, 'Position', [10 yPos 15 15]);
+                lamp = uilamp(obj.PropertyGrid);
                 lamp.Color = [0.7 0.7 0.7];
+                lamp.Layout.Row = i;
+                lamp.Layout.Column = 1;
                 obj.PropertyLamps.(props{i,1}) = lamp;
 
-                % === temporary:
-                if (i == 1)
-                    uilabel(innerPanel, ...
-                        'Position', [30 yPos-2 120 18], ...
-                        'Text', target.type);
-
-                    uilabel(innerPanel, ...
-                        'Position',[155 yPos-2 650 18], ...
-                        'Text', props{i,2});
-                        continue;
+                % Property name label
+                if i == 1
+                    nameLabel = uilabel(obj.PropertyGrid, ...
+                        'Text', target.type, ...
+                        'FontWeight', 'bold');
+                else
+                    nameLabel = uilabel(obj.PropertyGrid, ...
+                        'Text', props{i,1}, ...
+                        'FontWeight', 'bold');
                 end
-                % === temp
+                nameLabel.Layout.Row = i;
+                nameLabel.Layout.Column = 2;
                 
-                % Property name
-                uilabel(innerPanel, ...
-                    'Position', [30 yPos-2 120 18], ...
-                    'Text', props{i,1});
-                
-                % Description
-                uilabel(innerPanel, ...
-                    'Position', [155 yPos-2 650 18], ...
-                    'Text', props{i,2});
+                % Description label
+                descLabel = uilabel(obj.PropertyGrid, ...
+                    'Text', props{i,2}, ...
+                    'FontColor', [0.5 0.5 0.5]);
+                descLabel.Layout.Row = i;
+                descLabel.Layout.Column = 3;
             end   
         end
         
@@ -187,9 +184,9 @@ classdef SSDOTPipelineWindow < handle
             obj.AtlasPanel.Layout.Column = 1;
             
             grid = uigridlayout(obj.AtlasPanel, [1 3]);
-            grid.ColumnWidth = {140, 140, '1x'};
-            grid.Padding = [5 5 5 5];
-            grid.ColumnSpacing = 5;
+            grid.ColumnWidth = {'fit', 'fit', '1x'};
+            grid.Padding = [10 8 10 8];
+            grid.ColumnSpacing = 8;
             
             obj.ButtonLoadAV = uibutton(grid, 'Text', 'Load Atlas');
             obj.ButtonLoadAV.ButtonPushedFcn = @(~,~) obj.onLoadAV();
@@ -205,10 +202,10 @@ classdef SSDOTPipelineWindow < handle
             obj.SensitivityPanel.Layout.Row = 3;
             obj.SensitivityPanel.Layout.Column = 1;
             
-            grid = uigridlayout(obj.SensitivityPanel, [1 7]);
-            grid.ColumnWidth = {'fit','fit','fit','fit','fit','fit', '1x'};
-            grid.Padding = [5 5 5 5];
-            grid.ColumnSpacing = 5;
+            grid = uigridlayout(obj.SensitivityPanel, [1 8]);
+            grid.ColumnWidth = {'fit', 'fit', 'fit', 'fit', 80, 'fit', 50, '1x'};
+            grid.Padding = [10 8 10 8];
+            grid.ColumnSpacing = 8;
             
             % Buttons
             obj.ButtonLoadSens = uibutton(grid, 'Text', 'Load Sens');
@@ -224,8 +221,9 @@ classdef SSDOTPipelineWindow < handle
             obj.ButtonDisplaySensBrain.Layout.Column = 3;
             
             % Inline controls
-            lbl1 = uilabel(grid, 'Text', 'threshold_sens:', 'HorizontalAlignment', 'right');
-            lbl1.Layout.Row = 1;
+            lbl1 = uilabel(grid, ...
+                'Text', 'threshold_sens:', ...
+                'HorizontalAlignment', 'right');
             lbl1.Layout.Column = 4;
             
             obj.FieldThresholdSensitivity = uieditfield(grid, 'numeric');
@@ -233,14 +231,14 @@ classdef SSDOTPipelineWindow < handle
             obj.FieldThresholdSensitivity.ValueChangedFcn = @(~,~) obj.onConfigChanged();
             obj.FieldThresholdSensitivity.Layout.Column = 5;
             
-            lbl2 = uilabel(grid, 'Text', 'spatially_regu:', 'HorizontalAlignment', 'right');
-            lbl2.Layout.Row = 1;
+            lbl2 = uilabel(grid, ...
+                'Text', 'spatially_regu:', ...
+                'HorizontalAlignment', 'right');
             lbl2.Layout.Column = 6;
             
             obj.CheckSpatiallyRegu = uicheckbox(grid, 'Text', '');
             obj.CheckSpatiallyRegu.Value = logical(obj.ssdot.cfg.spatially_regu);
             obj.CheckSpatiallyRegu.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.CheckSpatiallyRegu.Layout.Row = 1;
             obj.CheckSpatiallyRegu.Layout.Column = 7;
         end
         
@@ -249,65 +247,63 @@ classdef SSDOTPipelineWindow < handle
             obj.SpatialPanel.Layout.Row = 4;
             obj.SpatialPanel.Layout.Column = 1;
             
-            grid = uigridlayout(obj.SpatialPanel, [1 11]);
-            grid.ColumnWidth = {'fit','fit', 'fit','1x', 'fit','1x', 'fit','1x', 'fit','1x'};
-            grid.Padding = [5 5 5 5];
-            grid.ColumnSpacing = 5;
+            grid = uigridlayout(obj.SpatialPanel, [1 10]);
+            grid.ColumnWidth = {'fit', 'fit', 'fit', 75, 'fit', 75, 'fit', 75, 'fit', 75};
+            grid.Padding = [10 8 10 8];
+            grid.ColumnSpacing = 8;
             
-            %buttons
+            % Buttons
             obj.ButtonGenSpatial = uibutton(grid, 'Text', 'Generate');
             obj.ButtonGenSpatial.ButtonPushedFcn = @(~,~) obj.onGenerateSpatialBase();
-            obj.ButtonGenSpatial.Layout.Row = 1;
             obj.ButtonGenSpatial.Layout.Column = 1;
             
             obj.ButtonDisplayKernels = uibutton(grid, 'Text', 'Show Centers');
             obj.ButtonDisplayKernels.ButtonPushedFcn = @(~,~) obj.onDisplaySpatialBaseCenters();
-            obj.ButtonDisplayKernels.Layout.Row = 1;
             obj.ButtonDisplayKernels.Layout.Column = 2;
             
-            % user input
-            lbl1 = uilabel(grid, 'Text', 'threshold_brain:', 'HorizontalAlignment', 'right');
-            lbl1.Layout.Row = 1;
+            % User input
+            lbl1 = uilabel(grid, ...
+                'Text', 'threshold_brain:', ...
+                'HorizontalAlignment', 'right');
             lbl1.Layout.Column = 3;
             
             obj.FieldThresholdBrain = uieditfield(grid, 'numeric');
             obj.FieldThresholdBrain.Value = obj.ssdot.cfg.threshold_brain;
             obj.FieldThresholdBrain.Limits = [0 Inf];
             obj.FieldThresholdBrain.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.FieldThresholdBrain.Layout.Row = 1;
             obj.FieldThresholdBrain.Layout.Column = 4;
             
-            lbl2 = uilabel(grid, 'Text', 'threshold_scalp:', 'HorizontalAlignment', 'right');
-            lbl2.Layout.Row = 1;
+            lbl2 = uilabel(grid, ...
+                'Text', 'threshold_scalp:', ...
+                'HorizontalAlignment', 'right');
             lbl2.Layout.Column = 5;
             
             obj.FieldThresholdScalp = uieditfield(grid, 'numeric');
             obj.FieldThresholdScalp.Value = obj.ssdot.cfg.threshold_scalp;
             obj.FieldThresholdScalp.Limits = [0 Inf];
             obj.FieldThresholdScalp.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.FieldThresholdScalp.Layout.Row = 1;
             obj.FieldThresholdScalp.Layout.Column = 6;
             
-            lbl3 = uilabel(grid, 'Text', 'sigma_brain:', 'HorizontalAlignment', 'right');
-            lbl3.Layout.Row = 1;
+            lbl3 = uilabel(grid, ...
+                'Text', 'sigma_brain:', ...
+                'HorizontalAlignment', 'right');
             lbl3.Layout.Column = 7;
             
             obj.FieldSigmaBrain = uieditfield(grid, 'numeric');
             obj.FieldSigmaBrain.Value = obj.ssdot.cfg.sigma_brain;
             obj.FieldSigmaBrain.Limits = [0 Inf];
             obj.FieldSigmaBrain.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.FieldSigmaBrain.Layout.Row = 1;
             obj.FieldSigmaBrain.Layout.Column = 8;
             
-            lbl4 = uilabel(grid, 'Text', 'sigma_scalp:', 'HorizontalAlignment', 'right');
-            lbl4.Layout.Row = 1;
+            lbl4 = uilabel(grid, ...
+                'Text', 'sigma_scalp:', ...
+                'HorizontalAlignment', 'right');
             lbl4.Layout.Column = 9;
             
             obj.FieldSigmaScalp = uieditfield(grid, 'numeric');
             obj.FieldSigmaScalp.Value = obj.ssdot.cfg.sigma_scalp;
             obj.FieldSigmaScalp.Limits = [0 Inf];
             obj.FieldSigmaScalp.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.FieldSigmaScalp.Layout.Row = 1;
             obj.FieldSigmaScalp.Layout.Column = 10;
         end
         
@@ -318,17 +314,15 @@ classdef SSDOTPipelineWindow < handle
             
             grid = uigridlayout(obj.ODPanel, [1 3]);
             grid.ColumnWidth = {'fit', 'fit', '1x'};
-            grid.Padding = [5 5 5 5];
-            grid.ColumnSpacing = 5;
+            grid.Padding = [10 8 10 8];
+            grid.ColumnSpacing = 8;
             
             obj.ButtonPrepareOD = uibutton(grid, 'Text', 'Prepare OD');
             obj.ButtonPrepareOD.ButtonPushedFcn = @(~,~) obj.onPrepareOD();
-            obj.ButtonPrepareOD.Layout.Row = 1;
             obj.ButtonPrepareOD.Layout.Column = 1;
             
             obj.ButtonViewSingle = uibutton(grid, 'Text', 'View Time Base');
             obj.ButtonViewSingle.ButtonPushedFcn = @(~,~) obj.onViewSingleTimeBase();
-            obj.ButtonViewSingle.Layout.Row = 1;
             obj.ButtonViewSingle.Layout.Column = 2;
         end
         
@@ -338,58 +332,57 @@ classdef SSDOTPipelineWindow < handle
             obj.ReconPanel.Layout.Column = 1;
             
             grid = uigridlayout(obj.ReconPanel, [1 9]);
-            grid.ColumnWidth = {'fit', 'fit', '1x', 'fit', '1x', 'fit', '1x', 'fit', '1x'};
-            grid.Padding = [5 5 5 5];
-            grid.ColumnSpacing = 5;
+            grid.ColumnWidth = {'fit', 'fit', 75, 'fit', 50, 'fit', 75, 'fit', 75};
+            grid.Padding = [10 8 10 8];
+            grid.ColumnSpacing = 8;
             
             obj.ButtonRunRecon = uibutton(grid, 'Text', 'Run Recon');
             obj.ButtonRunRecon.ButtonPushedFcn = @(~,~) obj.onRunImageReconstruction();
-            obj.ButtonRunRecon.Layout.Row = 1;
             obj.ButtonRunRecon.Layout.Column = 1;
             
-            % user input
-            lbl1 = uilabel(grid, 'Text', 'Device:', 'HorizontalAlignment', 'right');
-            lbl1.Layout.Row = 1;
+            % User input
+            lbl1 = uilabel(grid, ...
+                'Text', 'Device:', ...
+                'HorizontalAlignment', 'right');
             lbl1.Layout.Column = 2;
             
             obj.DropdownDevice = uidropdown(grid);
             obj.DropdownDevice.Items = {'gpu', 'cpu'};
             obj.DropdownDevice.Value = obj.ssdot.cfg.device;
             obj.DropdownDevice.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.DropdownDevice.Layout.Row = 1;
             obj.DropdownDevice.Layout.Column = 3;
             
-            lbl2 = uilabel(grid, 'Text', 'Reg:', 'HorizontalAlignment', 'right');
-            lbl2.Layout.Row = 1;
+            lbl2 = uilabel(grid, ...
+                'Text', 'Reg:', ...
+                'HorizontalAlignment', 'right');
             lbl2.Layout.Column = 4;
             
             obj.DropdownRegularization = uidropdown(grid);
             obj.DropdownRegularization.Items = {'1', '2', '3'};
             obj.DropdownRegularization.Value = num2str(obj.ssdot.cfg.regularization);
             obj.DropdownRegularization.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.DropdownRegularization.Layout.Row = 1;
             obj.DropdownRegularization.Layout.Column = 5;
             
-            lbl3 = uilabel(grid, 'Text', 'Alpha:', 'HorizontalAlignment', 'right');
-            lbl3.Layout.Row = 1;
+            lbl3 = uilabel(grid, ...
+                'Text', 'Alpha:', ...
+                'HorizontalAlignment', 'right');
             lbl3.Layout.Column = 6;
             
             obj.FieldAlpha = uieditfield(grid, 'numeric');
             obj.FieldAlpha.Value = obj.ssdot.cfg.alpha;
             obj.FieldAlpha.Limits = [0 Inf];
             obj.FieldAlpha.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.FieldAlpha.Layout.Row = 1;
             obj.FieldAlpha.Layout.Column = 7;
             
-            lbl4 = uilabel(grid, 'Text', 'Beta:', 'HorizontalAlignment', 'right');
-            lbl4.Layout.Row = 1;
+            lbl4 = uilabel(grid, ...
+                'Text', 'Beta:', ...
+                'HorizontalAlignment', 'right');
             lbl4.Layout.Column = 8;
             
             obj.FieldBeta = uieditfield(grid, 'numeric');
             obj.FieldBeta.Value = obj.ssdot.cfg.beta;
             obj.FieldBeta.Limits = [0 Inf];
             obj.FieldBeta.ValueChangedFcn = @(~,~) obj.onConfigChanged();
-            obj.FieldBeta.Layout.Row = 1;
             obj.FieldBeta.Layout.Column = 9;
         end
         
@@ -400,19 +393,17 @@ classdef SSDOTPipelineWindow < handle
             
             grid = uigridlayout(statusPanel, [1 2]);
             grid.ColumnWidth = {'fit', '1x'};
-            grid.Padding = [8 3 8 3];
-            grid.ColumnSpacing = 10;
+            grid.Padding = [10 5 10 5];
+            grid.ColumnSpacing = 8;
             
             obj.StatusLamp = uilamp(grid);
             obj.StatusLamp.Color = 'green';
-            obj.StatusLamp.Layout.Row = 1;
             obj.StatusLamp.Layout.Column = 1;
             
             obj.StatusLabel = uilabel(grid);
             obj.StatusLabel.Text = 'Ready';
             obj.StatusLabel.FontSize = 10;
             obj.StatusLabel.FontWeight = 'bold';
-            obj.StatusLabel.Layout.Row = 1;
             obj.StatusLabel.Layout.Column = 2;
         end
         
@@ -442,7 +433,6 @@ classdef SSDOTPipelineWindow < handle
             
             % Update ssdot
             obj.ssdot.setVar('cfg', cfg);
-
 
             % debug
             fprintf('Config updated: device=%s, reg=%d, alpha=%.4f, beta=%.4f, thresh_sens=%.2f, spatial_regu=%d, th_brain=%.2f, th_scalp=%.2f, sigma_brain=%.2f, sigma_scalp=%.2f\n', ...
@@ -505,8 +495,7 @@ classdef SSDOTPipelineWindow < handle
         end
 
         function updateBtnTips(obj)
-            %tips for disable button, update constantly after user load something
-            %tips with require fields
+            % Tips for disabled buttons
             tips = {
                 obj.ButtonDisplaySD, {'AtlasState'};
                 obj.ButtonLoadSens, {'AtlasState', 'selectedRun'}
@@ -516,7 +505,7 @@ classdef SSDOTPipelineWindow < handle
                 button = tips{i,1};
                 reqFields = tips{i,2};
 
-                if (button.Enable == "off" && ~isempty(reqFields))
+                if strcmp(button.Enable, 'off') && ~isempty(reqFields)
                     missing = {};
                     for j = 1:numel(reqFields)
                         if isempty(obj.ssdot.(reqFields{j}))
@@ -528,7 +517,7 @@ classdef SSDOTPipelineWindow < handle
             end
         end
         
-        %%  helper
+        %%  Helper
         function executeWithLogging(obj, startMsg, func, successMsg)
             lastwarn('');
             obj.setStatus(startMsg, 'yellow');
@@ -651,7 +640,6 @@ classdef SSDOTPipelineWindow < handle
             obj.updatePropertyLamps();
             obj.updateBtnTips();
         end
-
 
         function valid = isWindowValid(obj)
             % Check if window is still open
