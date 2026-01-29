@@ -26,7 +26,10 @@ classdef ssdotClass < handle
         RunList RunClass = RunClass.empty
 
         % selected run
-        selectedRun RunClass = RunClass.empty
+        selectedRun 
+
+        % level: run/sess/subj/group
+        level
 
         meta struct = struct('created', datetime, 'notes', "")
     end
@@ -61,6 +64,14 @@ classdef ssdotClass < handle
                 case 'selectedrun'
                     obj.checkSelectedRun(value);
                     obj.selectedRun = value;
+
+                case 'selectedRun'
+                    obj.checkSelectedRun(value);
+                    obj.selectedRun = value;
+
+                case 'level'
+                    obj.checkLevel(value)
+                    obj.level = string(value);
                     
                 case "AtlasState"
                     obj.checkAtlasState(value);
@@ -169,6 +180,10 @@ classdef ssdotClass < handle
 
     %% Helper validation methods
     methods (Access = private)
+        function checkLevel(~, level)
+            
+        end
+
         function checkAtlasState(~, AtlasState)
             if ~isstruct(AtlasState)
                 error('SSDOT:InvalidAtlasState', ...
@@ -191,10 +206,18 @@ classdef ssdotClass < handle
             end
         end
 
-        function checkSelectedRun(~, run) 
-            if ~isa(run, 'RunClass')
+        function checkSelectedRun(~, node) 
+            validClasses = {'RunClass', 'GroupClass', 'SubjClass', 'SessClass'}
+            isValid = false;
+            for i = 1:numel(validClasses)
+                if isa(node, validClasses{i})
+                     isValid = true;
+                end
+            end
+
+            if ~isValid
                 error('SSDOT:InvalidType', ...
-                      'Expected a RunClass object for property "selectedRun"');
+                    'Expected RunClass, GroupClass, SubjClass, or SessClass');
             end
         end
 

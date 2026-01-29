@@ -124,6 +124,7 @@ classdef SSDOTPipelineWindow < handle
             
             % Property names and descriptions
             props = {
+                'selectedRun', 'Selected run';
                 'AtlasState', 'AtlasViewer.mat';
                 'Sensitivity_Matrix', 'Sensitivity data';
                 'M', 'Masks';
@@ -138,7 +139,6 @@ classdef SSDOTPipelineWindow < handle
                 'HTY', 'H^T * Y';
                 'Conc', 'Concentration';
                 'b', 'Coefficients';
-                'selectedRun', 'Selected run'
             };
             
             % Create lamps and labels with fixed positions
