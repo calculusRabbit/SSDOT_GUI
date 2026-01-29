@@ -34,7 +34,7 @@ function plotOD(uiAx, runObj, userSel)
 
         % plot OD curve
         dataTypeLabel = ml(col).dataTypeLabel;
-        name = sprintf('Run %d — Tx%d–Rx%d — %s - %s', runObj.iRun, source, detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
+        name = sprintf('Run %d — Sx%d–Dx%d — %s - %s', runObj.iRun, source, detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
         plot(uiAx, x, y(:,col), 'LineWidth', 1.3, 'DisplayName', name);
     end
 

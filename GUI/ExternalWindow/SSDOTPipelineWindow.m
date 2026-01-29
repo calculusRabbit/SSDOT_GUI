@@ -123,8 +123,10 @@ classdef SSDOTPipelineWindow < handle
                 'Position', [0 0 850 350]);
             
             % Property names and descriptions
+            target = obj.ssdot.getVar('selectedRun');
+            targetName = target.name;
             props = {
-                'selectedRun', 'Selected run';
+                'selectedRun', targetName;
                 'AtlasState', 'AtlasViewer.mat';
                 'Sensitivity_Matrix', 'Sensitivity data';
                 'M', 'Masks';
@@ -153,6 +155,19 @@ classdef SSDOTPipelineWindow < handle
                 lamp = uilamp(innerPanel, 'Position', [10 yPos 15 15]);
                 lamp.Color = [0.7 0.7 0.7];
                 obj.PropertyLamps.(props{i,1}) = lamp;
+
+                % === temporary:
+                if (i == 1)
+                    uilabel(innerPanel, ...
+                        'Position', [30 yPos-2 120 18], ...
+                        'Text', target.type);
+
+                    uilabel(innerPanel, ...
+                        'Position',[155 yPos-2 650 18], ...
+                        'Text', props{i,2});
+                        continue;
+                end
+                % === temp
                 
                 % Property name
                 uilabel(innerPanel, ...
@@ -163,7 +178,7 @@ classdef SSDOTPipelineWindow < handle
                 uilabel(innerPanel, ...
                     'Position', [155 yPos-2 650 18], ...
                     'Text', props{i,2});
-            end
+            end   
         end
         
         function createAtlasPanel(obj)

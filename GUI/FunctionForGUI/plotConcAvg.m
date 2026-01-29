@@ -36,7 +36,7 @@ function plotConcAvg(uiAx, obj, userSel)
         k = userSel.selectSignal(i);
 
         dataTypeLabel = dcAvg.measurementList(hbo_idx + k).dataTypeLabel;
-        name = sprintf('%s %d — %s — Tx%d-Rx%d', obj.type, idx, dataTypeLabel, userSel.source, userSel.detector);
+        name = sprintf('%s %d — %s — Sx%d-Dx%d', obj.type, idx, dataTypeLabel, userSel.source, userSel.detector);
         plot(uiAx, x, y(:, hbo_idx + k), 'LineWidth', 1.3, 'DisplayName', name);
     end
 end

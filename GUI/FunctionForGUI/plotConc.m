@@ -17,7 +17,7 @@ function plotConc(uiAx, runObj, userSel)
         k = userSel.selectSignal(i);
 
         dataTypeLabel = dc.measurementList(hbo_idx + k).dataTypeLabel;
-        name = sprintf('Run %d — %s — Tx%d–Rx%d', runObj.iRun, dataTypeLabel, userSel.source, userSel.detector);
+        name = sprintf('Run %d — %s — Sx%d–Dx%d', runObj.iRun, dataTypeLabel, userSel.source, userSel.detector);
         plot(uiAx, x, y(:, hbo_idx + k), 'LineWidth', 1.3, 'DisplayName', name);
     end
 

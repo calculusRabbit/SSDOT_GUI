@@ -21,7 +21,7 @@ function plotRaw(uiAx, runObj, userSel)
         col = find(ml(:,1) == src & ml(:,2) == det & ml(:,4) == wlIdx, 1, 'first');
 
         % Plot the raw
-        label = sprintf('Run %d - Tx%d-Rx%d - Raw - %s', ...
+        label = sprintf('Run %d - Sx%d-Dx%d - Raw - %s', ...
             runObj.iRun, src, det, userSel.waveLengthLabel{wlIdx});
         plot(uiAx, t, y(:,col), 'LineWidth', 1.3, 'DisplayName', label);
     end
