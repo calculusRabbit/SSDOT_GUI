@@ -58,6 +58,8 @@ function RunImageRecon(app, ssdot)
     end
 
     if cfg.regularization == 3
+        OD_SS = ssdot.getVar('OD_SS');
+        OD_drift = ssdot.getVar('OD_drift');
         H = [H_brain, H_scalp, OD_SS, OD_drift]; 
         [u,s,v]=svds(H,size(H,2)); 
         max_sing = max(s(:));
