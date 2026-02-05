@@ -7,12 +7,14 @@ classdef avgWindow < handle
         %Data
         Target
         Items
+        
 
         %StatusPanel
         ProcessedLabel
         NotProcessedLabel
         ComputeAvgButton
         TargetsTable
+        ResultAxes
 
     end
 
@@ -54,6 +56,7 @@ classdef avgWindow < handle
             obj.createStatusPannel();
             obj.updateStatusPannel();
             obj.createResultPannel();
+            obj.updateResultsAxes();
         end
 
 
@@ -96,37 +99,85 @@ classdef avgWindow < handle
 
 
         function createResultPannel(obj)
-            % Create result panel
-            ResultsPanel = uipanel(obj.MainGrid, 'Title', 'Results');
-            ResultsPanel.Layout.Row = 2;
-            ResultsPanel.Layout.Column = 1;
+            % create result panel to show each individual result that have been processed
+            ResultsPannel = uipanel(obj.MainGrid, 'Title', 'Result');
+            ResultsPannel.Layout.Row = 2;
+            ResultsPannel.Layout.Column = 1;
 
-            numItems = numel(obj.Items);
+            numItems = numel(obj.Target.children);
 
-            % Grid that scrolls horizontally
-            ResultsGrid = uigridlayout(ResultsPanel, [1 numItems]);
-            ResultsGrid.ColumnWidth = repmat({250}, 1, numItems);
-            ResultsGrid.RowHeight = {'1x'};
+            % grid that scrolls horizontal
+            ResultsGrid = uigridlayout(ResultsPannel, [1 numItems]);
+            ResultsGrid.ColumnWidth = repmat({600}, 1, numItems);
             ResultsGrid.Scrollable = 'on';
             ResultsGrid.ColumnSpacing = 10;
 
-            % Add one plot per item
+            % add plot
+            % Initialize cell array to hold axes for each child
+            obj.ResultAxes = cell(numItems, 1);
+
             for i = 1:numItems
+                % panel for each result
+                individualPanel = uipanel(ResultsGrid);
+                individualPanel.Layout.Row = 1;
+                individualPanel.Layout.Column = i;
+                individualPanel.Title = obj.Target.children(i).name;
 
-                plotPanel = uipanel(ResultsGrid);
-                plotPanel.Layout.Row = 1;
-                plotPanel.Layout.Column = i;
+                %
+                grid = uigridlayout(individualPanel, [4 2]);
+                grid.RowHeight = {300, 300, 300, 300};
+                grid.Scrollable = 'on';
+                grid.RowSpacing = 10;
 
-                ax = uiaxes(plotPanel);
-                ax.Position = [10 10 230 180];
-                title(ax, obj.Target.children(i).name);
-
-                % DEMO
-                x = 1:10;
-                y = rand(1,10);
-                plot(ax, x, y, '-o');
-                grid(ax, 'on');
+                obj.ResultAxes{i} = gobjects(4, 2);
+                for r = 1:4
+                    for c = 1:2
+                        % Create the axes
+                        obj.ResultAxes{i}(r, c) = uiaxes(grid);
+                        obj.ResultAxes{i}(r, c).Layout.Row = r;
+                        obj.ResultAxes{i}(r, c).Layout.Column = c;
+                        
+                        % Set the axis limits behavior
+                        axis(obj.ResultAxes{i}(r, c), 'tight');
+                    end
+                end
             end
+        end
+
+        function updateResultsAxes(obj) 
+            % all run use same AV, but only run have been processed have AV:
+            for i = 1:numel(obj.Target.children)
+                if ~isempty(obj.Target.children(i).ssdot.AtlasState)
+                    faces = obj.Target.children(i).ssdot.AtlasState.pialsurf.mesh_reduced.faces;
+                    brain_vertices = obj.Target.children(i).ssdot.AtlasState.pialsurf.mesh_reduced.vertices;
+                    break;
+                end
+            end
+            
+
+            caxis_value = [-1 1]*1e-9;
+
+            for i = 1:numel(obj.Target.children)
+                % for testing now
+                if ~isempty(obj.Target.children(i).ssdot.AtlasState)
+                    HbO = Target.children(i).ssdot.H.HbO;
+                    HbR = Target.children(i).ssdot.H.HbR;
+
+                    for i_cond = 1:size(HbO, 2)
+                        % Get intensity data for this condition
+                        intensity_HbO = HbO(:, i_cond);
+                        intensity_HbR = HbR(:, i_cond);
+
+                        plot_intensity(obj.ResultAxes{i}(i_cond, 1), )
+                        plot_intensity(obj.ResultAxes{i}(i_cond, 2), )
+
+                    end
+                else
+                    continue;
+                end
+            end
+
+
         end
     end
 
