@@ -50,8 +50,13 @@ classdef SSDOTPipelineWindow < handle
         StatusLabel    matlab.ui.control.Label
         StatusLamp     matlab.ui.control.Lamp
         
+    end
+
+
+    properties (Access = public)
         ssdot
     end
+
     
     methods (Static)
         function h = open(app, ssdot)
@@ -644,6 +649,13 @@ classdef SSDOTPipelineWindow < handle
         function valid = isWindowValid(obj)
             % Check if window is still open
             valid = ~isempty(obj.Fig) && isvalid(obj.Fig);
+        end
+
+        function close(obj)
+            % Close the pipeline window
+            if ~isempty(obj.Fig) && isvalid(obj.Fig)
+                delete(obj.Fig);
+            end
         end
     end
 end
