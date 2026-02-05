@@ -233,6 +233,7 @@ classdef SSDOTPipelineWindow < handle
             
             obj.FieldThresholdSensitivity = uieditfield(grid, 'numeric');
             obj.FieldThresholdSensitivity.Value = obj.ssdot.cfg.threshold_sensitivity;
+            obj.FieldThresholdSensitivity.Limits = [-10 0];
             obj.FieldThresholdSensitivity.ValueChangedFcn = @(~,~) obj.onConfigChanged();
             obj.FieldThresholdSensitivity.Layout.Column = 5;
             
