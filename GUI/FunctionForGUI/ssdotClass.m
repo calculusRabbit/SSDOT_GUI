@@ -14,6 +14,7 @@ classdef ssdotClass < handle
         Y = [] % stacked OD vector
         OD_SS = [] % matrix
         OD_drift = [] % matrix
+        OD = struct()
         H
         
         % these data from runImageRecon
@@ -141,6 +142,11 @@ classdef ssdotClass < handle
                 case "meta"
                     obj.meta = value;
                     fprintf('Metadata updated\n');
+
+                case "OD"
+                    obj.checkOD(value);
+                    obj.OD = value;
+                    fprintf('OD set successfully\n');
                     
                 otherwise
                     error('SSDOT:UnknownVariable', 'Unknown variable: %s', name);
@@ -445,6 +451,30 @@ classdef ssdotClass < handle
 
             if isempty(OD_drift)
                 warning('SSDOT:EmptyField', 'OD_drift is empty');
+            end
+        end
+
+        function checkOD(~, OD)
+            if ~isstruct(OD)
+                error('SSDOT:InvalidType', 'OD must be a struct');
+            end
+
+            fieldNames = fieldnames(OD);
+            if numel(fieldNames) ~= 2
+                error('SSDOT:InvalidType', 'OD must have exactly 2 fields (for 2 wavelengths)');
+            end 
+
+            for i = 1:numel(fieldNames)
+                fieldName = fieldNames{i};
+                val = OD.(fieldName);
+
+                if ~isnumeric(val)  
+                    error('SSDOT:InvalidType', 'OD must be numeric');
+                end
+                
+                if isempty(val)
+                    warning('SSDOT:EmptyField', 'OD.%s is empty', fieldName);
+                end
             end
         end
     end
