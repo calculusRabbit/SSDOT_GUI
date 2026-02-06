@@ -32,6 +32,9 @@ function RunImageRecon(app, ssdot)
 
 
     if cfg.regularization == 2
+        OD = ssdot.getVar('OD');
+        OD_w1 = OD.w1;
+        OD_w2 = OD.w2;
         Observations = [OD_w1', OD_w2'];
         R = estimateMeasureNoise(Observations);
         R = repmat(R, 1, size(OD_w1,2));
