@@ -5,19 +5,19 @@ classdef SSDOTPipelineWindow < handle
         Fig matlab.ui.Figure
         MainGrid matlab.ui.container.GridLayout
         
-        % property of ssdot class panels
+        % Status display panel: show green/gray lamps for each data variable track what's loaded
         PropertyPanel matlab.ui.container.Panel
         PropertyGrid matlab.ui.container.GridLayout
         PropertyLamps
         
-        % function group panels
+        % Each panel = one step in the pipeline
         AtlasPanel matlab.ui.container.Panel
         SensitivityPanel matlab.ui.container.Panel
         SpatialPanel matlab.ui.container.Panel
         ODPanel matlab.ui.container.Panel
         ReconPanel matlab.ui.container.Panel
         
-        % button
+        % Buttons for each step
         ButtonLoadAV matlab.ui.control.Button
         ButtonDisplaySD matlab.ui.control.Button
         ButtonLoadSens matlab.ui.control.Button
@@ -72,13 +72,16 @@ classdef SSDOTPipelineWindow < handle
     
     methods (Access = private)
         function obj = SSDOTPipelineWindow(app, ssdot)
-            % check ssdot object
+            % Constructor - sets up the whole window
+
+            % make sure we got a valid ssdot object
             if isempty(ssdot) || ~isvalid(ssdot)
                 error('SSDOTPipelineWindow:InvalidInput', 'Valid ssdot object required');
             end
             
             obj.ssdot = ssdot;
             
+            % if have a parent app, link them so this closes when parent closes
             if ~isempty(app)
                 obj.App = app;
                 addlistener(app, 'ObjectBeingDestroyed', @(src,evt) delete(obj.Fig)); %so if parent app close this one also close
@@ -91,13 +94,13 @@ classdef SSDOTPipelineWindow < handle
             obj.Fig.Scrollable = 'on';
             obj.Fig.AutoResizeChildren = 'on';
             
-            % main grid layout - responsive heights
+            % Main layout: 7 rows stacked vertically
             obj.MainGrid = uigridlayout(obj.Fig, [7 1]);
             obj.MainGrid.RowHeight = {'2x', 'fit', 'fit', 'fit', 'fit', 'fit', 'fit'};
             obj.MainGrid.Padding = [10 10 10 10];
             obj.MainGrid.RowSpacing = 8;
             
-            % Create all panels for each sections
+            % Create all panels for each sections, ALL the UI sections
             obj.createPropertyStatusPanel();
             obj.createAtlasPanel();
             obj.createSensitivityPanel();
@@ -106,14 +109,14 @@ classdef SSDOTPipelineWindow < handle
             obj.createReconPanel();
             obj.createStatusBar();
             
-            % initial UI state
+            % Set initial button states
             obj.updateUI();
         end
 
 
-        %% CREATE UI
+        %% UI CREATION FUNCTIONS
         function createPropertyStatusPanel(obj)
-            % Property status panel - grid-based responsive layout
+            % Top panel showing which data variables are loaded (green) or missing (gray)
             obj.PropertyPanel = uipanel(obj.MainGrid, ...
                 'Title', 'Data Status', ...
                 'FontSize', 11, ...
@@ -121,7 +124,7 @@ classdef SSDOTPipelineWindow < handle
             obj.PropertyPanel.Layout.Row = 1;
             obj.PropertyPanel.Layout.Column = 1;
             
-            % Use grid layout for responsive design
+            % Grid with 3 columns: lamp, variable name, description
             obj.PropertyGrid = uigridlayout(obj.PropertyPanel, [15 3]);
             obj.PropertyGrid.RowHeight = repmat({'fit'}, 1, 15);
             obj.PropertyGrid.ColumnWidth = {'fit', 'fit', '1x'};
@@ -130,7 +133,7 @@ classdef SSDOTPipelineWindow < handle
             obj.PropertyGrid.ColumnSpacing = 10;
             obj.PropertyGrid.Scrollable = 'on';
             
-            % Property names and descriptions
+            % List of all the variables we want to track
             target = obj.ssdot.getVar('selectedRun');
             targetName = target.name;
             props = {
@@ -152,9 +155,10 @@ classdef SSDOTPipelineWindow < handle
             };
             
             obj.PropertyLamps = struct();
-            
+
+            % Create a row  for each variable: lamp + name + description
             for i = 1:size(props, 1)
-                % Lamp
+                % Status lamp (green = loaded, gray = missing)
                 lamp = uilamp(obj.PropertyGrid);
                 lamp.Color = [0.7 0.7 0.7];
                 lamp.Layout.Row = i;
@@ -413,8 +417,10 @@ classdef SSDOTPipelineWindow < handle
             obj.StatusLabel.Layout.Column = 2;
         end
         
-        %% 
+        %% CONFIG AND UI UPDATE
         function onConfigChanged(obj)
+            % Called whenever user changes any setting/input
+            % Grab all fiel values and updates the ssdot.cfg object
             if isempty(obj.ssdot) || ~isvalid(obj.ssdot)
                 return;
             end
@@ -449,6 +455,8 @@ classdef SSDOTPipelineWindow < handle
         
         
         function updatePropertyLamps(obj)
+            % Update lamp colors based on whether each variable is loaded
+            % Green = data exists, Gray = missing
             props = fieldnames(obj.PropertyLamps);
             
             for i = 1:length(props)
@@ -473,6 +481,7 @@ classdef SSDOTPipelineWindow < handle
         end
         
         function canEnable(obj, button, varargin)
+            % Enable button only if all required fields exist and have data
             button.Enable = 'off';
             
             if isempty(obj.ssdot) || ~isvalid(obj.ssdot)
@@ -549,7 +558,8 @@ classdef SSDOTPipelineWindow < handle
             end
         end
         
-        %% Callback functions
+        %% CALLBACKS
+        % Callback function
         function onLoadAV(obj)
             obj.executeWithLogging('Loading AtlasViewer...', ...
                 @() loadAV([], obj.ssdot), ...
@@ -631,7 +641,10 @@ classdef SSDOTPipelineWindow < handle
         end
 
         function updateUI(obj)
-            % Update button states
+            % Refresh all button states and lamps based on current data
+            % Called after each operation completes
+            
+            % Enable/disable each button based on what data exists
             obj.canEnable(obj.ButtonLoadAV);
             obj.canEnable(obj.ButtonDisplaySD, 'AtlasState');
             obj.canEnable(obj.ButtonLoadSens, 'AtlasState', 'selectedRun');

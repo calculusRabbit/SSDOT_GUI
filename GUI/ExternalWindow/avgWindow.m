@@ -4,16 +4,16 @@ classdef avgWindow < handle
         Fig
         MainGrid
 
-        %Data
-        Target
-        Items
         
-
-        %StatusPanel
+        Target % The data we are working with (could be session, subject or group)
+        
+        % Status pannel stuff
         ProcessedLabel
         NotProcessedLabel
         ComputeAvgButton
         TargetsTable
+
+        % Axes rid for each child's brain plots
         ResultAxes
 
     end
@@ -21,6 +21,7 @@ classdef avgWindow < handle
 
     methods (Static)
         function win = open(Target)
+            % Entry point, functio to open window
             win = avgWindow(Target);
         end
     end
@@ -33,11 +34,6 @@ classdef avgWindow < handle
             end
 
             obj.Target = Target;
-            obj.Items = Target.children;
-
-            % determine level and get list to display
-
-            
             obj.createWindow();
         end
 
@@ -48,30 +44,32 @@ classdef avgWindow < handle
             obj.Fig.Name = 'Result';
             obj.Fig.Position = [100 100 820 610];
 
-            % create grid layout
+            % create grid layout, SPlit the window into top (status) and bottom (results)
             obj.MainGrid = uigridlayout(obj.Fig, [2 1])
-            obj.MainGrid.RowHeight = {'0.3x', '0.7x'};
+            obj.MainGrid.RowHeight = {'0.3x', '0.7x'}; % top is smaller
             obj.MainGrid.RowSpacing = 10;
 
-            obj.createStatusPannel();
-            obj.updateStatusPannel();
-            obj.createResultPannel();
-            obj.updateResultsAxes();
+            obj.createStatusPannel();   % create the TOP panel with labels, button, and table
+            obj.updateStatusPannel();   % count how many runs are processed and populate the table rows
+
+            obj.createResultPannel();   % create the BOTTOM panel with a scrollable column of brain plot axes for each child
+            obj.updateResultsAxes();    % loop through each child and draw the HbO/HbR brain maps into their axes
         end
 
 
+        %% TOP PANNEL
         function createStatusPannel(obj)
-            %  Main Status Pannel
+            %  Top Pannel - Status Pannel
             StatusPanel = uipanel(obj.MainGrid, 'Title', 'Status');
             StatusPanel.Layout.Row = 1;
             StatusPanel.Layout.Column = 1;
 
-            % Create a grid to split left and right panels
+            % Split into left (counts + button) and right (table + selection)
             Statusgrid = uigridlayout(StatusPanel, [1 2]);
             Statusgrid.ColumnWidth = {'0.5x', '0.5x'};
             Statusgrid.ColumnSpacing = 10;
 
-            % Left Pannel
+            % Left side: processed count, unprocessed count, and the avg button
             leftGrid = uigridlayout(Statusgrid, [3 1]);
             leftGrid.Layout.Row = 1;
             leftGrid.Layout.Column = 1;
@@ -90,41 +88,43 @@ classdef avgWindow < handle
             obj.ComputeAvgButton.Layout.Column = 1;
             obj.ComputeAvgButton.ButtonPushedFcn = @(~,~) obj.onComputeAverage();
 
-            % Right Pannel
+            % Right side: table with run name, status, and a checkbox to select
             obj.TargetsTable = uitable(Statusgrid);
             obj.TargetsTable.Layout.Row = 1;
             obj.TargetsTable.Layout.Column = 2;
             obj.TargetsTable.ColumnName = {'Target', 'Status', 'Select'};
-            obj.TargetsTable.ColumnEditable = [false false true];
+            obj.TargetsTable.ColumnEditable = [false false true]; % only the checkbox is editable
         end
 
 
+        %% BOTTOM PANEL
         function createResultPannel(obj)
-            % create result panel to show each individual result that have been processed
+            %  Bottom panel — one column per child (run/session/subject), scrollable horizontally
             ResultsPannel = uipanel(obj.MainGrid, 'Title', 'Result');
             ResultsPannel.Layout.Row = 2;
             ResultsPannel.Layout.Column = 1;
 
             numItems = numel(obj.Target.children);
 
-            % grid that scrolls horizontal
+            % Each child gets a 600px-wide column, scroll sideways to see them all
             ResultsGrid = uigridlayout(ResultsPannel, [1 numItems]);
             ResultsGrid.ColumnWidth = repmat({600}, 1, numItems);
             ResultsGrid.Scrollable = 'on';
             ResultsGrid.ColumnSpacing = 10;
 
-            % add plot
-            % Initialize cell array to hold axes for each child
+            % Prepare storage for plot
             obj.ResultAxes = cell(numItems, 1);
 
             for i = 1:numItems
-                % panel for each result
+                % One panel per child
                 individualPanel = uipanel(ResultsGrid);
                 individualPanel.Layout.Row = 1;
                 individualPanel.Layout.Column = i;
                 individualPanel.Title = obj.Target.children(i).name;
 
-                %
+                % 4 rows x 2 cols grid inside each panel (rows scroll vertically)
+                % Each row for HbO or HbR, each column for Left or Right Hemisphere
+                % Layout: rows 1-2 = HbO (L/R), rows 3-4 = HbR (L/R)
                 grid = uigridlayout(individualPanel, [4 2]);
                 grid.RowHeight = {300, 300, 300, 300};
                 grid.Scrollable = 'on';
@@ -144,8 +144,47 @@ classdef avgWindow < handle
                 end
             end
         end
+    end
+
+
+    methods(Access = private)
+
+        function updateStatusPannel(obj)
+            % update left side
+            % Count how many children have been processed and update the labels + table
+            numItems = numel(obj.Target.children);
+            processedCount = 0;
+            statusList = strings(numItems, 1);
+
+            % checkk each child -it's "processed" if it has result data 
+            for i = 1:numItems
+                if ~isempty(obj.Target.children(i).ssdot.b) && ~isempty(obj.Target.children(i).ssdot)
+                    statusList(i) = "Processed";
+                    processedCount = processedCount + 1;
+                else
+                    statusList(i) = "Not Processed";
+                end
+            end
+            notProcessedCount = numItems - processedCount;
+
+            str1 = sprintf("✓ %d Processed", processedCount);
+            str2 = sprintf("✗ %d Not Processed", notProcessedCount);
+
+            obj.ProcessedLabel.Text = str1;
+            obj.NotProcessedLabel.Text = str2;
+
+            % Fill the tablle(name, status, checkbox)
+            names = obj.getChildrenName();
+            selected = false(numItems, 1);
+            
+            obj.TargetsTable.Data = [cellstr(names') , cellstr(statusList) , num2cell(selected)];
+        end
+
 
         function updateResultsAxes(obj)
+            % Plot brain image for every child(run) that has been processed
+
+            % Grab mesh data from the first child that has it:
             faces = [];
             brain_vertices = [];
             for i = 1:numel(obj.Target.children)
@@ -159,7 +198,8 @@ classdef avgWindow < handle
             caxis_value = [-1 1]*1e-9;
 
             for i = 1:numel(obj.Target.children)
-                if isempty(obj.Target.children(i).ssdot.AtlasState)
+                % skip children with no result
+                if isempty(obj.Target.children(i).ssdot.AtlasState) && isempty(obj.Target.children(i).ssdot.b)
                     continue;
                 end
 
@@ -167,8 +207,6 @@ classdef avgWindow < handle
                 HbR = obj.Target.children(i).ssdot.result.HbR;
 
                 for i_cond = 1:size(HbO, 2)
-                    if i_cond > 2, break; end  % only 2 rows for HbO, 2 for HbR
-
                     intensity_HbO = HbO(:, i_cond);
                     intensity_HbR = HbR(:, i_cond);
 
@@ -186,73 +224,46 @@ classdef avgWindow < handle
                 end
             end
         end
-    end
 
 
-    methods(Access = private)
         function onComputeAverage(obj)
+            % Called when the user click "calculate Average"
             % Read checkmarks from Select column
             tableData    = obj.TargetsTable.Data;
             selectedMask = cell2mat(tableData(:, 3));
             selectedIdx  = find(selectedMask);
+            
 
             if isempty(selectedIdx)
                 uialert(obj.Fig, 'Please check at least one run.', 'No Selection');
                 return;
             end
 
-            % Accumulate HbO and HbR
-            firstChild = obj.Target.children(selectedIdx(1));
-            HbO_sum    = firstChild.ssdot.result.HbO;
-            HbR_sum    = firstChild.ssdot.result.HbR;
+            
+            HbO_sum = 0;
+            HbR_sum = 0;
 
-            for k = 2:numel(selectedIdx)
-                i       = selectedIdx(k);
-                HbO_sum = HbO_sum + obj.Target.children(i).ssdot.result.HbO;
-                HbR_sum = HbR_sum + obj.Target.children(i).ssdot.result.HbR;
+            for i = 1:numel(selectedIdx)
+                k = selectedIdx(i);
+                HbO_sum = HbO_sum + obj.Target.children(k).ssdot.result.HbO;
+                HbR_sum = HbR_sum + obj.Target.children(k).ssdot.result.HbR;
             end
 
             HbO_avg = HbO_sum / numel(selectedIdx);
             HbR_avg = HbR_sum / numel(selectedIdx);
 
-            % Grab mesh and plot using existing plot_Hb
-            faces          = firstChild.ssdot.AtlasState.pialsurf.mesh_reduced.faces;
-            brain_vertices = firstChild.ssdot.AtlasState.pialsurf.mesh_reduced.vertices;
+            faces = [];
+            brain_vertices = [];
+            for i = 1:numel(obj.Target.children)
+                if ~isempty(obj.Target.children(i).ssdot.AtlasState)
+                    faces = obj.Target.children(i).ssdot.AtlasState.pialsurf.mesh_reduced.faces;
+                    brain_vertices = obj.Target.children(i).ssdot.AtlasState.pialsurf.mesh_reduced.vertices;
+                    break;
+                end
+            end
 
             plot_Hb(obj.Fig, faces, brain_vertices, HbO_avg, HbR_avg);
         end
-
-        function updateStatusPannel(obj)
-            % update left side
-            numItems = numel(obj.Target.children);
-            processedCount = 0;
-            statusList = strings(numItems, 1);
-
-            for i = 1:numItems
-                if ~isempty(obj.Target.children(i).ssdot.b) && ~isempty(obj.Target.children(i).ssdot)
-                    statusList(i) = "Processed";
-                    processedCount = processedCount + 1;
-                else
-                    statusList(i) = "Not Processed";
-                end
-            end
-            notProcessedCount = numItems - processedCount;
-
-            str1 = sprintf("✓ %d Processed", processedCount);
-            str2 = sprintf("✗ %d Not Processed", notProcessedCount);
-
-            obj.ProcessedLabel.Text = str1;
-            obj.NotProcessedLabel.Text = str2;
-
-            % update right side
-            % table
-            names = obj.getChildrenName();
-            selected = false(numItems, 1);
-            
-            obj.TargetsTable.Data = [cellstr(names') , cellstr(statusList) , num2cell(selected)];
-
-        end
-
 
 
         function output = getChildrenName(obj)
@@ -297,7 +308,7 @@ classdef avgWindow < handle
             set(h, 'DiffuseStrength', 0.9, 'SpecularStrength', 0.12, 'AmbientStrength', 0.2);
 
             if ~isempty(caxis_value)
-                clim(ax, caxis_value); % clim is the modern replacement for caxis
+                clim(ax, caxis_value); 
             end
 
             if strcmp(rotation, 'L')
@@ -322,9 +333,6 @@ classdef avgWindow < handle
             myColorMap = jet(256);
             myColorMap(127:129, :) = 0.8;
             colormap(ax, myColorMap);
-            cb = colorbar(ax);
-            cb.Position(4) = 0.5;
-            cb.Position(2) = cb.Position(2) + 0.15;
             axis(ax, 'image');
             axis(ax, 'off');
         end
