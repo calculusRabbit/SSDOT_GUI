@@ -14,6 +14,7 @@ classdef ssdotClass < handle
         Y = [] % stacked OD vector
         OD_SS = [] % matrix
         OD_drift = [] % matrix
+        OD = struct()
         H
         
         % these data from runImageRecon
@@ -22,11 +23,16 @@ classdef ssdotClass < handle
         Conc
         b
 
+        result = struct() %Hbo and Hbr
+
         % container for all runs 
         RunList RunClass = RunClass.empty
 
         % selected run
-        selectedRun RunClass = RunClass.empty
+        selectedRun 
+
+        % level: run/sess/subj/group
+        level
 
         meta struct = struct('created', datetime, 'notes', "")
     end
@@ -61,6 +67,14 @@ classdef ssdotClass < handle
                 case 'selectedrun'
                     obj.checkSelectedRun(value);
                     obj.selectedRun = value;
+
+                case 'selectedRun'
+                    obj.checkSelectedRun(value);
+                    obj.selectedRun = value;
+
+                case 'level'
+                    obj.checkLevel(value)
+                    obj.level = string(value);
                     
                 case "AtlasState"
                     obj.checkAtlasState(value);
@@ -130,6 +144,11 @@ classdef ssdotClass < handle
                 case "meta"
                     obj.meta = value;
                     fprintf('Metadata updated\n');
+
+                case "OD"
+                    obj.checkOD(value);
+                    obj.OD = value;
+                    fprintf('OD set successfully\n');
                     
                 otherwise
                     error('SSDOT:UnknownVariable', 'Unknown variable: %s', name);
@@ -169,6 +188,10 @@ classdef ssdotClass < handle
 
     %% Helper validation methods
     methods (Access = private)
+        function checkLevel(~, level)
+            
+        end
+
         function checkAtlasState(~, AtlasState)
             if ~isstruct(AtlasState)
                 error('SSDOT:InvalidAtlasState', ...
@@ -191,10 +214,18 @@ classdef ssdotClass < handle
             end
         end
 
-        function checkSelectedRun(~, run) 
-            if ~isa(run, 'RunClass')
+        function checkSelectedRun(~, node) 
+            validClasses = {'RunClass', 'GroupClass', 'SubjClass', 'SessClass'}
+            isValid = false;
+            for i = 1:numel(validClasses)
+                if isa(node, validClasses{i})
+                     isValid = true;
+                end
+            end
+
+            if ~isValid
                 error('SSDOT:InvalidType', ...
-                      'Expected a RunClass object for property "selectedRun"');
+                    'Expected RunClass, GroupClass, SubjClass, or SessClass');
             end
         end
 
@@ -422,6 +453,30 @@ classdef ssdotClass < handle
 
             if isempty(OD_drift)
                 warning('SSDOT:EmptyField', 'OD_drift is empty');
+            end
+        end
+
+        function checkOD(~, OD)
+            if ~isstruct(OD)
+                error('SSDOT:InvalidType', 'OD must be a struct');
+            end
+
+            fieldNames = fieldnames(OD);
+            if numel(fieldNames) ~= 2
+                error('SSDOT:InvalidType', 'OD must have exactly 2 fields (for 2 wavelengths)');
+            end 
+
+            for i = 1:numel(fieldNames)
+                fieldName = fieldNames{i};
+                val = OD.(fieldName);
+
+                if ~isnumeric(val)  
+                    error('SSDOT:InvalidType', 'OD must be numeric');
+                end
+                
+                if isempty(val)
+                    warning('SSDOT:EmptyField', 'OD.%s is empty', fieldName);
+                end
             end
         end
     end

@@ -34,15 +34,20 @@ function plotOD(uiAx, runObj, userSel)
 
         % plot OD curve
         dataTypeLabel = ml(col).dataTypeLabel;
-        name = sprintf('Run %d — Tx%d–Rx%d — %s - %s', runObj.iRun, source, detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
+        name = sprintf('Run %d — Sx%d–Dx%d — %s - %s', runObj.iRun, source, detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
         plot(uiAx, x, y(:,col), 'LineWidth', 1.3, 'DisplayName', name);
+    end
+
+    %% debug:
+    if (runObj.iRun == 2)
+        return;
     end
 
 
     % Overlay stim vertical lines
     stimList = runObj.GetStim();
 
-    colorOrder = get(uiAx, 'ColorOrder');
+    %colorOrder = get(uiAx, 'ColorOrder');
 
     for i = 1:numel(stimList)
         data = stimList(i).GetData();
@@ -52,14 +57,17 @@ function plotOD(uiAx, runObj, userSel)
 
         % first column is the onset timeline
         onsetTime = data(:,1);
-        color = colorOrder(i, :);
+        
+        % Generate unique color based on run and condition
+        hue = mod((runObj.iRun - 1) * numel(stimList) + i - 1, 12) / 12;
+        color = hsv2rgb([hue, 0.8, 0.9]); 
 
         for j = 1:numel(onsetTime)
             if j == 1
             xline(uiAx, onsetTime(j), '--', ...
                 'LineWidth', 1.3, ...
                 'Color', color, ...
-                'DisplayName', stimList(i).name);
+                'DisplayName', sprintf('Run %d: %s', runObj.iRun, stimList(i).name));
             else
             xline(uiAx, onsetTime(j), '--', ...
                 'LineWidth', 1.3, ...

@@ -12,6 +12,10 @@ function prepare_OD_data(app, ssdot)
     [time_points,n_channels] = size(OD);
     OD_w1 = OD(:,channels)';
     OD_w2 = OD(:,channels + size(OD,2)/2)';
+    % Store in ssdot
+    OD_struct = struct('w1', OD_w1, 'w2', OD_w2);
+    ssdot.setVar('OD', OD_struct);
+    
     Y_w1 = reshape(OD_w1,[],1);
     Y_w2 = reshape(OD_w2,[],1);
     Y = [Y_w1;Y_w2];

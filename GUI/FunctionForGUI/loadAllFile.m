@@ -1,4 +1,4 @@
-function loadAllFile(ssdot, root, group)
+function loadAllFile(root, group)
     % Rebase path and load each node in the hierarchy
     parentPath = filesepStandard(root, 'dir');
     rebasePaths(group, parentPath);
@@ -36,9 +36,6 @@ function loadAllFile(ssdot, root, group)
 
                     err = safeLoad(group(c).subjs(i).sess(j).runs(k));
                     checkLoad(txa, err, 3);
-
-                    % save all runs to ssdot
-                    ssdot.setVar('Run', group(c).subjs(i).sess(j).runs(k));
                 end
             end
 
@@ -67,6 +64,10 @@ end
 % -------- local helpers --------
 function ok = safeLoad(node)
     try
+        if isempty(node.ssdot)
+            node.ssdot = ssdotClass();
+        end
+
         err = node.Load();
         fprintf('[DEBUG] %s.Load() returned: ', class(node));
         disp(err);
@@ -75,8 +76,12 @@ function ok = safeLoad(node)
         else
             ok = (err == 0);
         end
-    catch
+
+        node.ssdot.setVar('level', node.type);
+        node.ssdot.setVar('selectedrun', node);
+    catch ME
         ok = false;
+         fprintf('An error occurred from loadAllFile.m: %s\n', ME.message);
     end
 end
 

@@ -34,7 +34,7 @@ function plotODAvg(uiAx, obj, userSel)
             end
 
             dataTypeLabel = ml(col).dataTypeLabel;
-            name = sprintf('%s %d — Tx%d-Rx%d — %s - %s',obj.type, idx, userSel.source, userSel.detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
+            name = sprintf('%s %d — Sx%d-Dx%d — %s - %s',obj.type, idx, userSel.source, userSel.detector, dataTypeLabel, userSel.waveLengthLabel{userSel.selectSignal(i)});
             plot(uiAx, x, y(:,col), 'LineWidth', 1.3, 'DisplayName', name);
         end
     end

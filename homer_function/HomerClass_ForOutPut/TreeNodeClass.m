@@ -1,4 +1,8 @@
 classdef TreeNodeClass < handle
+
+    properties (Access = public)
+        ssdot ssdotClass
+    end
     
     properties % (Access = private)
         name;
