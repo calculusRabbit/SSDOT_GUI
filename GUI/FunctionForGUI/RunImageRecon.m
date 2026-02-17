@@ -32,6 +32,9 @@ function RunImageRecon(app, ssdot)
 
 
     if cfg.regularization == 2
+        OD = ssdot.getVar('OD');
+        OD_w1 = OD.w1;
+        OD_w2 = OD.w2;
         Observations = [OD_w1', OD_w2'];
         R = estimateMeasureNoise(Observations);
         R = repmat(R, 1, size(OD_w1,2));
@@ -58,6 +61,8 @@ function RunImageRecon(app, ssdot)
     end
 
     if cfg.regularization == 3
+        OD_SS = ssdot.getVar('OD_SS');
+        OD_drift = ssdot.getVar('OD_drift');
         H = [H_brain, H_scalp, OD_SS, OD_drift]; 
         [u,s,v]=svds(H,size(H,2)); 
         max_sing = max(s(:));
