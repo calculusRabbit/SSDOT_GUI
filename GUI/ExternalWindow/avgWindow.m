@@ -86,7 +86,7 @@ classdef avgWindow < handle
             obj.ComputeAvgButton.Text = 'Calculate Average';
             obj.ComputeAvgButton.Layout.Row = 3;
             obj.ComputeAvgButton.Layout.Column = 1;
-            obj.ComputeAvgButton.ButtonPushedFcn = @(~,~) obj.onComputeAverage();
+            obj.ComputeAvgButton.ButtonPushedFcn = @(~,~) obj.onComputeAverageWrapper();
 
             % Right side: table with run name, status, and a checkbox to select
             obj.TargetsTable = uitable(Statusgrid);
@@ -226,7 +226,16 @@ classdef avgWindow < handle
         end
 
 
-        function onComputeAverage(obj)
+        function onComputeAverageWrapper(obj)
+            obj.computeAverage();
+            % Place holder here:
+            % obj.compute_T_Value(obj);
+            % obj.compute_P_value(obj);
+            
+        end
+
+
+        function computeAverage(obj)
             % Called when the user click "calculate Average"
             % Read checkmarks from Select column
             tableData    = obj.TargetsTable.Data;
