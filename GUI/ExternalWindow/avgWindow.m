@@ -229,8 +229,8 @@ classdef avgWindow < handle
         function onComputeAverageWrapper(obj)
             obj.computeAverage();
             % Place holder here:
-            % obj.compute_T_Value(obj);
-            % obj.compute_P_value(obj);
+            % obj.compute_T_Value();
+            % obj.compute_P_value();
             
         end
 
