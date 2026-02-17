@@ -128,6 +128,8 @@ function RunImageRecon(app, ssdot)
     n_vertex_brain = size(AtlasState.fwmodel.mesh.vertices,1); 
     
     [HbO, HbR] = project2vertex(ssdot, n_vertex_brain);
+    ssdot.result.HbO = HbO;
+    ssdot.result.HbR = HbR;
     brain_vertices = AtlasState.pialsurf.mesh_reduced.vertices;
     faces = AtlasState.pialsurf.mesh_reduced.faces;
     

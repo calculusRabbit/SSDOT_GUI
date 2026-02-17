@@ -14,13 +14,15 @@ classdef ssdotClass < handle
         Y = [] % stacked OD vector
         OD_SS = [] % matrix
         OD_drift = [] % matrix
-        H
+        H = struct()
         
         % these data from runImageRecon
         HTH
         HTY
         Conc
         b
+
+        result = struct() %Hbo and Hbr
 
         % container for all runs 
         RunList RunClass = RunClass.empty
