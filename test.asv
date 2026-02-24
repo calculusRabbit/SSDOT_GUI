@@ -1,0 +1,21 @@
+function [HbO, HbR] = test(ssdot, n_vertex_brain)
+    T = ssdot.getVar('T');
+    M = ssdot.getVar('M');
+    Conc = ssdot.getVar('Conc');
+    
+    n_cond = size(T.T_HbO_brain,2);
+    tbasis = T.t_HbO_brain;
+    position = tbasis(:,:,1) == max(tbasis(:,:,1));
+    
+    HbO = zeros(n_vertex_brain, n_cond);
+    HbR = zeros(n_vertex_brain, n_cond);
+    
+    for i_cond = 1:n_cond
+        HbO(M.mask_brain,i_cond) = Conc.intensity_HbO{i_cond}(:,position);
+        HbR(M.mask_brain,i_cond) = Conc.intensity_HbR{i_cond}(:,position);
+        
+        % DEBUG: Check the values
+fprintf('Condition %d - HbO range: [%.8e, %.8e]\n', i_cond, min(HbO(:,i_cond)), max(HbO(:,i_cond)));
+fprintf('Condition %d - HbR range: [%.8e, %.8e]\n', i_cond, min(HbR(:,i_cond)), max(HbR(:,i_cond)));
+    end
+end
