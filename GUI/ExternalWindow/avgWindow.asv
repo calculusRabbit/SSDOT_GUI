@@ -360,7 +360,7 @@ classdef avgWindow < handle
                 end
             end
 
-            plot_Hb(obj.Fig, faces, brain_vertices, t_HbO, t_HbR);
+            plot_Hb(obj.Fig, faces, brain_vertices, t_HbO, HbR_avg);
 
             
         end
