@@ -8,6 +8,13 @@ This project is a MATLAB-based application for guiding users through an SSDOT/fN
 
 The goal of this work was to make a complex research workflow more usable, structured, and interactive instead of relying only on scripts and manual processing.
 
+## What is SSDOT
+
+This project is built around an SS-DOT neuroimaging workflow. SS-DOT, or short-separation diffuse optical tomography, is a method for improving fNIRS image reconstruction by modeling short-separation regression within the DOT framework.
+
+For technical background, see:
+[Short-separation regression incorporated diffuse optical tomography image reconstruction modeling for high-density functional near-infrared spectroscopy](https://www.spiedigitallibrary.org/journals/neurophotonics/volume-10/issue-2/025007/Short-separation-regression-incorporated-diffuse-optical-tomography-image-reconstruction-modeling/10.1117/1.NPh.10.2.025007.full)
+
 ## Problem & Motivation
 
 Neuroimaging pipelines can be difficult to use when they depend on many manual steps, research code, and large data structures. This project improves usability by turning those steps into a guided interface with clearer state management, workflow controls, and visualization tools.
